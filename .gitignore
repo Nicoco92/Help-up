@@ -1,0 +1,26 @@
+# Dépendances et builds
+node_modules/
+dist/
+dist-ssr/
+coverage/
+
+# Secrets : tous les .env (racine, backend, frontend), sauf les modèles
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Claude Code : réglages personnels (settings.json et hooks/ restent versionnés)
+.claude/settings.local.json
