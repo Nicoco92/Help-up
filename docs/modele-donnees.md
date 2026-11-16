@@ -185,7 +185,7 @@ erDiagram
 
 ## Listes de référence
 
-Une seule source, dans `backend/src/constants/` : `categories.js` (8 catégories, mêmes slugs que les icônes de la charte) et `quartiers.js` (11 quartiers de Paris sud et de Villejuif, avec leurs coordonnées).
+Une seule source, dans `backend/src/constants/` : `categories.ts` (8 catégories, mêmes slugs que les icônes de la charte) et `quartiers.ts` (11 quartiers de Paris sud et de Villejuif, avec leurs coordonnées).
 
 ## Scripts (mongosh, exécutables sur Atlas)
 

@@ -180,7 +180,7 @@
   const DAY = 24 * 60 * 60 * 1000
   const NOW = new Date()
 
-  // Quartiers avec coordonnées [longitude, latitude] (identiques à backend/src/constants/quartiers.js)
+  // Quartiers avec coordonnées [longitude, latitude] (identiques à backend/src/constants/quartiers.ts)
   const QUARTIERS = [
     { slug: 'paris-13-butte-aux-cailles', coordinates: [2.3500, 48.8270] },
     { slug: 'paris-13-place-d-italie', coordinates: [2.3555, 48.8310] },

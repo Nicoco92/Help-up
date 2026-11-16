@@ -1,5 +1,6 @@
 // Catégories de mission : mêmes slugs que les icônes Lucide de la charte graphique (§8).
-const CATEGORIES = [
+// Toute modification doit être reportée dans backend/sql/seed.js (et son bloc dans migration/seed-demo.js).
+export const CATEGORIES = [
   { slug: 'bricolage', label: 'Bricolage', icon: 'hammer' },
   { slug: 'informatique', label: 'Informatique', icon: 'code' },
   { slug: 'soutien-scolaire', label: 'Soutien scolaire', icon: 'book-open' },
@@ -8,8 +9,10 @@ const CATEGORIES = [
   { slug: 'animaux', label: 'Animaux', icon: 'dog' },
   { slug: 'jardinage', label: 'Jardinage', icon: 'leaf' },
   { slug: 'garde-enfants', label: "Garde d'enfants", icon: 'baby' },
-]
+] as const
 
-const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug)
+export type Category = (typeof CATEGORIES)[number]
+export type CategorySlug = Category['slug']
 
-module.exports = { CATEGORIES, CATEGORY_SLUGS }
+// Tuple non vide : utilisable directement dans z.enum(CATEGORY_SLUGS) et dans un enum Mongoose.
+export const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug) as [CategorySlug, ...CategorySlug[]]

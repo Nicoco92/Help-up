@@ -1,0 +1,5 @@
+{
+  // Deux configurations : l'application React (navigateur) et la config Vite (Node).
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+}

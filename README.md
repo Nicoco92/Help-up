@@ -1,7 +1,7 @@
 # HelpUP
 
 Application de mini-jobs entre voisins (workshop Full Stack JS, Efrei M1).
-Stack : React 19 + Vite, Express 5, MongoDB + Mongoose, Docker Compose.
+Stack : **TypeScript** (accord du formateur), React 19 + Vite, Express 5, MongoDB + Mongoose, Docker Compose.
 
 ## Installation sur un nouveau PC
 
@@ -87,7 +87,7 @@ Interface d'admin mongo-express sur http://localhost:8081, identifiants `ME_USER
 docker compose --profile tools up -d
 ```
 
-Lint et tests (dans `backend/` ou `frontend/`) : `npm run lint`, `npm test` (backend).
+Vérifications (dans `backend/` ou `frontend/`) : `npm run typecheck` (types TypeScript), `npm run lint`, `npm test` (backend), `npm run build`.
 
 ## Base de données : structure et données de démo
 

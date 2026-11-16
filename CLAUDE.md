@@ -22,13 +22,13 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 - **Modèle économique** : commission de 10 à 15 %, profil premium pour les prestataires, partenariats locaux. Hors du périmètre du MVP technique.
 
 ## Stack imposée (le livret interdit de la remplacer)
-- **Langage** : JavaScript (pas de TypeScript, sauf accord du formateur).
+- **Langage** : **TypeScript** (accord du formateur obtenu ; à mentionner en soutenance, le livret dit JavaScript par défaut). Seuls les scripts mongosh (`backend/sql`, `backend/migration`) restent en JS.
 - **Front** : React 19 avec Vite 8, et `react-router-dom`. Pas de Next.js.
 - **Back** : Node.js et Express 5, organisé en routes, contrôleurs, services et modèles.
 - **Base de données** : MongoDB avec Mongoose.
 - **Authentification** : bcrypt pour le hachage, JWT signé avec `JWT_SECRET`, middleware qui lit le jeton `Bearer`.
 - **Validation** : zod, côté serveur. Elle est obligatoire même si React valide déjà les formulaires.
-- **Qualité** : ESLint (flat config) côté front et côté back. oxlint a été retiré.
+- **Qualité** : ESLint (flat config) côté front et côté back. oxlint a été retiré. `typescript-eslint` des deux côtés ; `npm run typecheck` (tsc) en plus du lint.
 - **Tests** : Jest et Supertest, avec `mongodb-memory-server` comme base isolée.
 - **Documentation** : README.md, `.env.example` sans aucun secret, Swagger/OpenAPI (`swagger-ui-express` et `yaml`).
 
@@ -41,19 +41,21 @@ full-stack-js/
 ├── .gitignore                # node_modules/, builds, tous les .env sauf .env.example, logs, éditeurs
 ├── frontend/                 # modèle Vite react, ESLint ; vite.config.js `envDir: '..'` (lit le .env racine) — jamais de secret préfixé VITE_ (exposé au navigateur)
 └── backend/
-    ├── src/app.js            # app Express (helmet, cors, json) + GET /api/health ; n'ouvre pas de port
-    ├── src/server.js         # dotenv + mongoose.connect + app.listen(PORT)
-    ├── src/constants/        # categories.js, quartiers.js (Paris sud + Villejuif, [lng, lat]), statuses.js : source unique
+    ├── src/app.ts            # app Express (helmet, cors, json) + GET /api/health ; n'ouvre pas de port ; export default
+    ├── src/server.ts         # dotenv + mongoose.connect + app.listen(PORT)
+    ├── src/constants/        # categories.ts, quartiers.ts (Paris sud + Villejuif, [lng, lat]), statuses.ts : source unique, `as const` + types (CategorySlug, QuartierSlug, MissionStatus…) ; *_SLUGS = tuples pour z.enum
     ├── src/{routes,controllers,services,models,middlewares,validators,utils,docs}/   # vides
     ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)
     ├── migration/seed-demo.js # mongosh autonome : structure (copie de sql/seed.js) + démo déterministe, comptes @helpup.test (mdp password123, hash bcrypt en dur) ; RESET=true ne touche que la démo ; pas de JWT
     ├── scripts/mongosh.sh    # npm run db:demo | db:create : lance le script via docker mongo:7.0 sur MONGODB_URI du fichier d'env racine ; s'arrête si une base de même nom/autre casse existe (ex. HelpUP)
-    ├── tests/health.test.js  # test Supertest de /api/health
-    └── eslint.config.js      # CommonJS, globals node + jest   (plus de backend/.env : tout est dans le .env racine)
+    ├── tests/health.test.ts  # test Supertest de /api/health (Jest + ts-jest)
+    ├── tsconfig.json         # NodeNext (sortie CommonJS), strict, types node+jest, noEmit (typecheck src+tests)
+    ├── tsconfig.build.json   # build src/ → dist/
+    └── eslint.config.js      # flat config CJS : typescript-eslint pour *.ts, globales mongosh pour sql/ et migration/
 ```
-- Le backend est en CommonJS (`require`) pour éviter de configurer Jest en ESM. Le frontend est en ESM.
-- Scripts du backend : `dev` (nodemon), `start`, `test` (`jest --runInBand`), `lint`.
-- Scripts du frontend : `dev`, `build`, `lint`, `preview`.
+- Backend en TypeScript, syntaxe `import`/`export`, compilé en CommonJS (`module: NodeNext` + `"type": "commonjs"`) : imports relatifs sans extension. Frontend en TypeScript ESM (`tsconfig.app.json` pour src, `tsconfig.node.json` pour vite.config.ts, `src/vite-env.d.ts` type `VITE_API_URL`).
+- Scripts du backend : `dev` (`tsx watch src/server.ts`), `build` (tsc → dist/), `start` (`node dist/server.js`), `typecheck`, `test` (`jest --runInBand`, preset ts-jest), `lint`, `db:create`, `db:demo`.
+- Scripts du frontend : `dev`, `build` (`tsc -b && vite build`), `typecheck`, `lint`, `preview`.
 - Docker Compose :
   - Mode développement : le code est monté en volume et les `node_modules` sont dans des volumes nommés.
   - Les secrets viennent du `.env` racine (lu par Compose) ; une variable manquante bloque le démarrage (`${VAR:?}`).
@@ -64,7 +66,6 @@ full-stack-js/
   - Ports `27017` et `8081` liés à `127.0.0.1` uniquement. En production : retirer les `ports` de mongo, ne pas déployer mongo-express, régénérer les mots de passe.
   - Le script de `mongo/init/` ne s'exécute que si le volume `mongo-data` est vide : après un changement d'identifiants, `docker compose down -v` (efface les données).
   - Le backend attend que le healthcheck de Mongo réponde avant de démarrer.
-- Nettoyage encore à faire : supprimer `frontend/.oxlintrc.json` (oxlint retiré) avant le commit initial. `setup-helpup.sh` n'existe plus.
 
 ## Environnement Docker (résolu le 2026-11-16)
 `docker compose up -d` fonctionne : `curl localhost:3000/api/health` renvoie `{"status":"ok"}`, le front répond sur http://localhost:5173.
