@@ -47,6 +47,7 @@ full-stack-js/
     ├── src/{routes,controllers,services,models,middlewares,validators,utils,docs}/   # vides
     ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)
     ├── migration/seed-demo.js # mongosh autonome : structure (copie de sql/seed.js) + démo déterministe, comptes @helpup.test (mdp password123, hash bcrypt en dur) ; RESET=true ne touche que la démo ; pas de JWT
+    ├── scripts/mongosh.sh    # npm run db:demo | db:create : lance le script via docker mongo:7.0 sur MONGODB_URI du fichier d'env racine ; s'arrête si une base de même nom/autre casse existe (ex. HelpUP)
     ├── tests/health.test.js  # test Supertest de /api/health
     └── eslint.config.js      # CommonJS, globals node + jest   (plus de backend/.env : tout est dans le .env racine)
 ```

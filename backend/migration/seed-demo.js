@@ -20,6 +20,16 @@
   const DB_NAME = 'helpup'
   const database = db.getSiblingDB(DB_NAME)
 
+  // MongoDB refuse deux bases dont le nom ne diffère que par la casse (« helpup » et « HelpUP ») :
+  // on s'arrête tout de suite avec un message clair plutôt que d'échouer au milieu du script.
+  const conflict = db.adminCommand({ listDatabases: 1, nameOnly: true, authorizedDatabases: true }).databases
+    .map((d) => d.name)
+    .find((n) => n !== DB_NAME && n.toLowerCase() === DB_NAME.toLowerCase())
+  if (conflict) {
+    throw new Error(`La base « ${conflict} » existe déjà et bloque la création de « ${DB_NAME} » (même nom, casse différente). `
+      + `Vérifiez avec l'équipe qu'elle ne contient rien d'important, supprimez-la, puis relancez.`)
+  }
+
   const CATEGORIES = ['bricolage', 'informatique', 'soutien-scolaire', 'courses', 'demenagement', 'animaux', 'jardinage', 'garde-enfants']
   const QUARTIERS = ['paris-13-butte-aux-cailles', 'paris-13-place-d-italie', 'paris-13-bibliotheque', 'paris-14-denfert',
     'paris-14-alesia', 'paris-15-convention', 'paris-15-beaugrenelle', 'kremlin-bicetre', 'ivry-centre', 'villejuif-centre',

@@ -10,7 +10,9 @@
     "test": "jest --runInBand",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "db:create": "sh scripts/mongosh.sh sql/seed.js",
+    "db:demo": "sh scripts/mongosh.sh migration/seed-demo.js"
   },
   "keywords": [],
   "author": "",

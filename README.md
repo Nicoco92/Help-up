@@ -98,14 +98,17 @@ Deux scripts **mongosh** autonomes (aucune dépendance), exécutables directemen
 | `backend/sql/seed.js` | Crée la base **vide** : collections `users`, `missions`, `applications`, `reviews`, règles de validation et index. Ne supprime rien, peut être relancé |
 | `backend/migration/seed-demo.js` | Crée la base (même structure) **puis** insère 15 comptes, 32 missions, 45 candidatures et 10 avis. Si la démo existe déjà, n'insère rien, sauf avec `RESET = true` en haut de la partie 2 : seuls les comptes `@helpup.test` et ce qui leur est lié sont alors remplacés |
 
-**Lancer sur Atlas**, au choix :
-- **Compass** connecté à Atlas → onglet **MONGOSH** en bas → coller tout le contenu du fichier → Entrée.
-- **Ligne de commande**, sans installer mongosh (Docker lit `MONGODB_URI` dans le `.env`, rien à copier) :
-  ```bash
-  docker run --rm --env-file .env -v "$PWD/backend:/scripts:ro" mongo:7.0 \
-    sh -c 'mongosh "$MONGODB_URI" /scripts/sql/seed.js'
-  ```
-  (remplacer `sql/seed.js` par `migration/seed-demo.js` pour la démo).
+**Lancer sur Atlas en une commande** (Docker fournit mongosh, `MONGODB_URI` est lu dans le fichier d'environnement racine) :
+
+```bash
+cd backend
+npm run db:demo     # structure + données de démo
+npm run db:create   # ou : seulement la base vide
+```
+
+Si une base au nom proche existe déjà avec une autre casse (par exemple `HelpUP`), la commande s'arrête sans rien modifier : MongoDB refuse `helpup` et `HelpUP` côte à côte. Vérifier avec l'équipe, supprimer l'ancienne base, relancer.
+
+Autre possibilité : **Compass** (ou un playground de l'extension MongoDB pour VS Code) connecté à Atlas, en collant le contenu du fichier.
 
 L'interface web d'Atlas (Data Explorer) ne sait pas exécuter de script : passer par Compass ou mongosh.
 

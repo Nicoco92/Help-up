@@ -194,5 +194,5 @@ Une seule source, dans `backend/src/constants/` : `categories.js` (8 catégories
 | `backend/sql/seed.js` | Base **vide** : collections, règles de validation (`$jsonSchema`), index. Relançable sans risque |
 | `backend/migration/seed-demo.js` | Même structure **+ données de démo** (identiques à chaque exécution). `RESET = true` remplace uniquement les données `@helpup.test` |
 
-Lancement et comptes de démo : voir le README, section « Base de données ».
+Lancement en une commande : `npm run db:demo` (ou `npm run db:create`) dans `backend/`. Comptes de démo : voir le README, section « Base de données ».
 Les listes (catégories, quartiers, statuts) sont recopiées dans ces scripts : toute modification de `backend/src/constants/` doit y être reportée.
