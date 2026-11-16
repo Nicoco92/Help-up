@@ -43,7 +43,10 @@ full-stack-js/
 └── backend/
     ├── src/app.js            # app Express (helmet, cors, json) + GET /api/health ; n'ouvre pas de port
     ├── src/server.js         # dotenv + mongoose.connect + app.listen(PORT)
+    ├── src/constants/        # categories.js, quartiers.js (Paris sud + Villejuif, [lng, lat]), statuses.js : source unique
     ├── src/{routes,controllers,services,models,middlewares,validators,utils,docs}/   # vides
+    ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)
+    ├── migration/seed-demo.js # mongosh autonome : structure (copie de sql/seed.js) + démo déterministe, comptes @helpup.test (mdp password123, hash bcrypt en dur) ; RESET=true ne touche que la démo ; pas de JWT
     ├── tests/health.test.js  # test Supertest de /api/health
     └── eslint.config.js      # CommonJS, globals node + jest   (plus de backend/.env : tout est dans le .env racine)
 ```
@@ -116,6 +119,7 @@ npm 11.19 affiche des warnings `install-scripts not yet covered by allowScripts`
 
 ## Plan d'équipe (Nicolas, Romain, Yaël)
 - Référence : `docs/plan-features.md` (répartition, contrat d'API, Gantt). Nicolas = auth, profils, CRUD missions ; Yaël = seed, squelette front, recherche (`/api/explore/missions`), carte ; Romain = candidatures (`/api/applications`), statuts, tableau de bord.
+- Modèle de données de référence : `docs/modele-donnees.md` (anglais camelCase, argent en centimes, `providerId` = prestataire, `location` calculé depuis `quartier`).
 - Un seul type de compte (pas de rôles/admin), localisation par liste fixe de quartiers, seul le flux candidatures change le statut d'une mission.
 
 ## Proposition pour HelpUP (version initiale, remplacée par le plan d'équipe)

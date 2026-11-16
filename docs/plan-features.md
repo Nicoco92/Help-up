@@ -83,12 +83,15 @@ Toutes les routes métier exigent `Authorization: Bearer <JWT>`. Format d'erreur
 
 ### Modèles (résumé)
 
+Détail complet (types, contraintes, index, cycle de vie, scripts) : [modele-donnees.md](modele-donnees.md).
+
 ```js
-User        { email, passwordHash, firstName, lastName, city, bio, skills: [String] }
-Mission     { ownerId, title, description, category, rewardCents, date, quartier,
-              location: { type: 'Point', coordinates: [lng, lat] },
-              status: 'open' | 'assigned' | 'completed' | 'cancelled', assignedTo }
+User        { email, passwordHash, firstName, lastName, phone?, city?, bio?, skills: [String], avatarUrl? }
+Mission     { ownerId, providerId?, title, description, rewardCents, estimatedMinutes, category, scheduledAt,
+              quartier, location: { type: 'Point', coordinates: [lng, lat] },
+              status: 'open' | 'assigned' | 'completed' | 'cancelled', urgent?, completedAt? }
 Application { missionId, applicantId, message, status: 'pending' | 'accepted' | 'rejected' | 'withdrawn' }
+Review      { missionId, authorId, targetId, rating: 1..5, comment? }   // bonus
 ```
 
 ---

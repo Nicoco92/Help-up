@@ -89,6 +89,37 @@ docker compose --profile tools up -d
 
 Lint et tests (dans `backend/` ou `frontend/`) : `npm run lint`, `npm test` (backend).
 
+## Base de données : structure et données de démo
+
+Deux scripts **mongosh** autonomes (aucune dépendance), exécutables directement sur Atlas :
+
+| Fichier | Effet |
+|---|---|
+| `backend/sql/seed.js` | Crée la base **vide** : collections `users`, `missions`, `applications`, `reviews`, règles de validation et index. Ne supprime rien, peut être relancé |
+| `backend/migration/seed-demo.js` | Crée la base (même structure) **puis** insère 15 comptes, 32 missions, 45 candidatures et 10 avis. Si la démo existe déjà, n'insère rien, sauf avec `RESET = true` en haut de la partie 2 : seuls les comptes `@helpup.test` et ce qui leur est lié sont alors remplacés |
+
+**Lancer sur Atlas**, au choix :
+- **Compass** connecté à Atlas → onglet **MONGOSH** en bas → coller tout le contenu du fichier → Entrée.
+- **Ligne de commande**, sans installer mongosh (Docker lit `MONGODB_URI` dans le `.env`, rien à copier) :
+  ```bash
+  docker run --rm --env-file .env -v "$PWD/backend:/scripts:ro" mongo:7.0 \
+    sh -c 'mongosh "$MONGODB_URI" /scripts/sql/seed.js'
+  ```
+  (remplacer `sql/seed.js` par `migration/seed-demo.js` pour la démo).
+
+L'interface web d'Atlas (Data Explorer) ne sait pas exécuter de script : passer par Compass ou mongosh.
+
+Comptes de démo (mot de passe `password123`) :
+
+| Compte | Rôle dans la démo |
+|---|---|
+| `alice.martin@helpup.test` | Publie des missions : une ouverte avec 3 candidats à accepter, une attribuée, une terminée avec avis |
+| `bob.nguyen@helpup.test` | Étudiant : candidatures en attente, refusée, et une mission terminée |
+| `chloe.diallo@helpup.test` | Publie **et** postule |
+
+> La base Atlas est **partagée** par l'équipe : prévenir les autres avant un `RESET = true`.
+> Détail des collections, contraintes et index : [docs/modele-donnees.md](docs/modele-donnees.md).
+
 ## Sécurité de la base
 
 - MongoDB exige une authentification. Le backend utilise un compte limité à la base `helpup` (`readWrite`), jamais le compte administrateur.
@@ -112,4 +143,5 @@ Lint et tests (dans `backend/` ou `frontend/`) : `npm run lint`, `npm test` (bac
 ## Documentation
 
 - [Plan de développement](docs/plan-features.md) : répartition des features, contrat d'API, dépendances et diagramme de Gantt.
+- [Modèle de données](docs/modele-donnees.md) : User, Mission, Application, Review (champs, contraintes, index, cycle de vie, scripts).
 - [Charte graphique](docs/charte-graphique.md) : couleurs (clair et sombre), typographie, composants, carte, ton éditorial et variables CSS.
