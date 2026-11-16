@@ -114,7 +114,11 @@ npm 11.19 affiche des warnings `install-scripts not yet covered by allowScripts`
 - La fiche d'oral et le sujet HelpUP décrivent un projet **de groupe** sur un concept libre.
 - Il faut faire confirmer ce qui s'applique. Quel que soit le cas, on garde les règles transversales du contrat d'API.
 
-## Proposition pour HelpUP (rien n'est encore décidé)
+## Plan d'équipe (Nicolas, Romain, Yaël)
+- Référence : `docs/plan-features.md` (répartition, contrat d'API, Gantt). Nicolas = auth, profils, CRUD missions ; Yaël = seed, squelette front, recherche (`/api/explore/missions`), carte ; Romain = candidatures (`/api/applications`), statuts, tableau de bord.
+- Un seul type de compte (pas de rôles/admin), localisation par liste fixe de quartiers, seul le flux candidatures change le statut d'une mission.
+
+## Proposition pour HelpUP (version initiale, remplacée par le plan d'équipe)
 - Ressource principale : `/api/missions` (titre, description, catégorie, prix en centimes, date, adresse ou ville, statut `open|assigned|done|cancelled`, `ownerId`).
 - Ressources secondaires, en bonus : candidatures (`/api/missions/:id/applications`) et avis après une mission.
 

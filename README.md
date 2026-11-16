@@ -111,4 +111,5 @@ Lint et tests (dans `backend/` ou `frontend/`) : `npm run lint`, `npm test` (bac
 
 ## Documentation
 
+- [Plan de développement](docs/plan-features.md) : répartition des features, contrat d'API, dépendances et diagramme de Gantt.
 - [Charte graphique](docs/charte-graphique.md) : couleurs (clair et sombre), typographie, composants, carte, ton éditorial et variables CSS.
