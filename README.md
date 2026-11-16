@@ -27,26 +27,24 @@ cd Help-up
 
 ### 3. Créer les fichiers de secrets
 
-Les `.env` ne sont jamais dans Git : chacun crée les siens à partir des modèles `.env.example`.
-Ces commandes copient les modèles et remplacent les `change-me` par des valeurs aléatoires :
+Le projet a **un seul** fichier d'environnement : `.env` à la racine (MongoDB, JWT, CORS, mongo-express et l'URL de l'API pour le front).
+Il n'est jamais dans Git : chacun crée le sien à partir de `.env.example`.
+
+> Toute variable qui commence par `VITE_` est envoyée au navigateur et visible par tout le monde. Ne jamais préfixer un secret par `VITE_`.
+
+Ces commandes copient le modèle et remplacent les `change-me` par des valeurs aléatoires :
 
 ```bash
-# Secrets Docker (MongoDB, mongo-express)
+# Secrets serveur (MongoDB, JWT, mongo-express)
 cp .env.example .env
 for v in MONGO_ROOT_PASSWORD MONGO_APP_PASSWORD ME_PASSWORD; do
   sed -i "s/^$v=.*/$v=$(openssl rand -hex 24)/" .env
 done
-
-# Backend (JWT)
-cp backend/.env.example backend/.env
-sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 32)/" backend/.env
-
-# Frontend (URL de l'API, pas de secret)
-cp frontend/.env.example frontend/.env
+sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 32)/" .env
 ```
 
 Sur macOS, remplacer `sed -i` par `sed -i ''`.
-Le `change-me` restant dans `MONGODB_URI` de `backend/.env` est normal : sous Docker, cette valeur est remplacée par celle de `compose.yaml`. Elle ne sert que pour lancer l'API sans Docker.
+Docker Compose ne transmet à chaque conteneur que ses propres variables : le backend reçoit `JWT_*`, `CORS_ORIGIN`, `PORT` et l'URI Mongo du compte applicatif (jamais le mot de passe administrateur), le frontend reçoit seulement `VITE_API_URL`.
 On peut aussi copier les fichiers et remplacer les `change-me` à la main ; dans ce cas, utiliser des valeurs hexadécimales (`openssl rand -hex 24`) : elles vont dans une URI Mongo, où `@`, `:` ou `/` casseraient la connexion.
 
 Chaque PC a ses propres mots de passe : ne pas se les envoyer entre membres du groupe.

@@ -36,17 +36,16 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 ```
 full-stack-js/
 ├── compose.yaml              # mongo:7.0 (auth, hôte 127.0.0.1:27017), backend, frontend, mongo-express (profil "tools", auth)
-├── .env.example              # modèle des secrets Docker (MONGO_ROOT_*, MONGO_APP_*, ME_*) ; le vrai .env est ignoré
+├── .env.example              # SEUL fichier d'env du projet : MONGO_ROOT_*, MONGO_APP_*, ME_*, JWT_*, CORS_ORIGIN, VITE_API_URL ; le vrai .env est ignoré
 ├── mongo/init/01-create-app-user.js   # crée l'utilisateur applicatif au 1er démarrage (volume vide)
 ├── .gitignore                # node_modules/, builds, tous les .env sauf .env.example, logs, éditeurs
-├── frontend/                 # modèle Vite react, ESLint, .env.example (VITE_API_URL=http://localhost:3000/api)
+├── frontend/                 # modèle Vite react, ESLint ; vite.config.js `envDir: '..'` (lit le .env racine) — jamais de secret préfixé VITE_ (exposé au navigateur)
 └── backend/
     ├── src/app.js            # app Express (helmet, cors, json) + GET /api/health ; n'ouvre pas de port
     ├── src/server.js         # dotenv + mongoose.connect + app.listen(PORT)
     ├── src/{routes,controllers,services,models,middlewares,validators,utils,docs}/   # vides
     ├── tests/health.test.js  # test Supertest de /api/health
-    ├── eslint.config.js      # CommonJS, globals node + jest
-    └── .env.example          # PORT=3000, MONGODB_URI (avec identifiants), JWT_SECRET, JWT_EXPIRES_IN=1h, CORS_ORIGIN=http://localhost:5173
+    └── eslint.config.js      # CommonJS, globals node + jest   (plus de backend/.env : tout est dans le .env racine)
 ```
 - Le backend est en CommonJS (`require`) pour éviter de configurer Jest en ESM. Le frontend est en ESM.
 - Scripts du backend : `dev` (nodemon), `start`, `test` (`jest --runInBand`), `lint`.
@@ -54,7 +53,8 @@ full-stack-js/
 - Docker Compose :
   - Mode développement : le code est monté en volume et les `node_modules` sont dans des volumes nommés.
   - Les secrets viennent du `.env` racine (lu par Compose) ; une variable manquante bloque le démarrage (`${VAR:?}`).
-  - Le compose remplace `MONGODB_URI` par `mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/helpup?authSource=helpup`.
+  - Le backend n'a pas d'`env_file` : le compose lui passe une liste explicite (`PORT`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CORS_ORIGIN`, `MONGODB_URI`) pour qu'il ne voie jamais le mot de passe root. Ajouter une variable backend = l'ajouter dans `.env.example` ET dans `environment:` du service backend. Le frontend reçoit seulement `VITE_API_URL` (Vite lit les `VITE_*` de l'environnement du conteneur).
+  - Le compose construit `MONGODB_URI` : `mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/helpup?authSource=helpup`.
   - Mongo : authentification activée ; le backend utilise un compte `readWrite` limité à `helpup`, jamais le compte root.
   - mongo-express : se connecte en root, protégé par login (`ME_USER`/`ME_PASSWORD`), lancé avec `docker compose --profile tools up`.
   - Ports `27017` et `8081` liés à `127.0.0.1` uniquement. En production : retirer les `ports` de mongo, ne pas déployer mongo-express, régénérer les mots de passe.
