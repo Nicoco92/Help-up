@@ -110,3 +110,7 @@ Lint et tests (dans `backend/` ou `frontend/`) : `npm run lint`, `npm test` (bac
 - **`required variable ... is missing`** : le `.env` racine manque ou est incomplet (étape 3).
 - **Le backend redémarre en boucle avec `Authentication failed`** : les mots de passe du `.env` ne correspondent plus à ceux créés dans le volume. Faire `docker compose down -v` puis `docker compose up -d`.
 - **Pourquoi `mongo:7.0` et pas 8** : MongoDB 8 refuse de démarrer sur les noyaux Linux 6.19.0 à 7.0.13 (`known incompatibility`), dont celui de la VM Docker Desktop. On pourra repasser en 8 après une mise à jour de Docker Desktop.
+
+## Documentation
+
+- [Charte graphique](docs/charte-graphique.md) : couleurs (clair et sombre), typographie, composants, carte, ton éditorial et variables CSS.

@@ -70,6 +70,12 @@ full-stack-js/
 
 npm 11.19 affiche des warnings `install-scripts not yet covered by allowScripts` pour bcrypt, mongodb-memory-server et quelques autres paquets. À vérifier avec `node -e "require('bcrypt').hashSync('x',10)"`. S'il le faut : `npm install-scripts approve bcrypt mongodb-memory-server`.
 
+## Charte graphique
+- Référence : `docs/charte-graphique.md` (basée sur le skill global `apple-design`, HIG Apple). Tout le style du frontend en découle.
+- Vert `#174F40` = marque et action principale ; orange `#F3A66B` = signal (urgent/nouveau) uniquement, **jamais en texte sur fond clair** (1,85:1).
+- Couleurs uniquement via les variables CSS sémantiques (section 12), mode sombre via `prefers-color-scheme`, sans bouton propre au site.
+- Plus Jakarta Sans (titres, prix) + police système (texte, contrôles). Icônes Lucide. Carte Leaflet + OpenStreetMap.
+
 ## Contrat API v1 du livret (à respecter exactement)
 - Toutes les routes commencent par `/api`, en JSON UTF-8. Le port vient de `PORT`.
 - `GET /api/health` est public et renvoie `200 {"status":"ok"}`.
