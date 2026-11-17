@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { api, ApiError } from '../api/client'
+import { ApiError, exploreApi } from '../services/api'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { StatusBadge } from '../components/StatusBadge'
 import type { Mission } from '../types/mission'
@@ -21,7 +21,8 @@ export function MissionDetailPage() {
   useEffect(() => {
     const controller = new AbortController()
     if (!id) return () => controller.abort()
-    api<Mission>(`/explore/missions/${encodeURIComponent(id)}`, { signal: controller.signal })
+    exploreApi
+      .getById(id, controller.signal)
       .then((result) => {
         setMission(result)
         setError(null)
@@ -44,29 +45,29 @@ export function MissionDetailPage() {
 
   if (!id) {
     return (
-      <main className="detail-page">
+      <div className="detail-page">
         <section className="state-card detail-state" role="alert">
           <h1>Mission introuvable</h1>
-          <Link className="button button--primary" to="/">
+          <Link className="button button--primary" to="/missions">
             Voir les missions
           </Link>
         </section>
-      </main>
+      </div>
     )
   }
 
   if (loadedId !== id) {
     return (
-      <main className="detail-page">
+      <div className="detail-page">
         <div className="detail-skeleton" aria-label="Chargement de la mission" aria-busy="true" />
-      </main>
+      </div>
     )
   }
 
   if (error || !mission) {
     return (
-      <main className="detail-page">
-        <Link className="back-link" to="/">
+      <div className="detail-page">
+        <Link className="back-link" to="/missions">
           <ArrowLeft size={18} aria-hidden="true" />
           Retour aux missions
         </Link>
@@ -74,17 +75,17 @@ export function MissionDetailPage() {
           <span className="state-icon">!</span>
           <h1>Mission indisponible</h1>
           <p>{error ?? 'Cette mission ne peut pas être affichée.'}</p>
-          <Link className="button button--primary" to="/">
+          <Link className="button button--primary" to="/missions">
             Voir les missions
           </Link>
         </section>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="detail-page">
-      <Link className="back-link" to="/">
+    <div className="detail-page">
+      <Link className="back-link" to="/missions">
         <ArrowLeft size={18} aria-hidden="true" />
         Retour aux missions
       </Link>
@@ -140,6 +141,6 @@ export function MissionDetailPage() {
         )}
 
       </article>
-    </main>
+    </div>
   )
 }

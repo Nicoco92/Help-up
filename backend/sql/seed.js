@@ -48,6 +48,7 @@
           city: str(0, 80),
           bio: str(0, 500),
           skills: { bsonType: 'array', maxItems: 8, uniqueItems: true, items: { enum: CATEGORIES } },
+          role: { enum: ['client', 'admin'] },
           avatarUrl: str(9, 500, { pattern: '^https://' }),
           createdAt: date,
           updatedAt: date,

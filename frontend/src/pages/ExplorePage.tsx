@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { List, Map, RotateCcw, Search, ChevronDown } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { api, ApiError } from '../api/client'
+import { ApiError, exploreApi } from '../services/api'
 import { Button } from '../components/Button'
 import { MissionCard } from '../components/MissionCard'
 import { MissionMap } from '../components/MissionMap'
-import { CATEGORIES } from '../data/categories'
-import type { Mission, MissionListResponse } from '../types/mission'
+import { CATEGORIES } from '../constants/categories'
+import type { Mission } from '../types/mission'
 
 type DraftFilters = {
   q: string
@@ -47,7 +47,7 @@ function buildApiQuery(params: URLSearchParams) {
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 401) {
-    return 'Ajoutez un jeton de démonstration valide dans le stockage local pour afficher les missions.'
+    return 'Ta session a expiré. Reconnecte-toi pour voir les missions.'
   }
   if (error instanceof Error) return error.message
   return 'Les missions ne peuvent pas être chargées pour le moment.'
@@ -239,9 +239,8 @@ export function ExplorePage() {
   useEffect(() => {
     const controller = new AbortController()
 
-    api<MissionListResponse>(`/explore/missions${requestKey ? `?${requestKey}` : ''}`, {
-      signal: controller.signal,
-    })
+    exploreApi
+      .list(requestKey, controller.signal)
       .then((response) => {
         setMissions(response.items)
         setError(null)
@@ -264,7 +263,7 @@ export function ExplorePage() {
   }
 
   return (
-    <main className="explore-page">
+    <div className="explore-page">
       <section className="explore-intro">
         <div className="intro-copy">
           <p className="eyebrow">Le bon coup de main, tout près de chez vous</p>
@@ -362,6 +361,6 @@ export function ExplorePage() {
           <MissionMap missions={missions} highlightedId={highlightedId} onHover={setHighlightedId} />
         </aside>
       </section>
-    </main>
+    </div>
   )
 }

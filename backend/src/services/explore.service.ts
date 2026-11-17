@@ -3,7 +3,7 @@ import type { Filter, Sort } from 'mongodb'
 import { CATEGORIES } from '../constants/categories'
 import { findQuartier } from '../constants/quartiers'
 import type { ExploreQuery } from '../validators/explore.validator'
-import { ExploreError } from '../utils/ExploreError'
+import { BadRequestError, NotFoundError } from '../utils/errors'
 
 type MissionRecord = {
   _id: Types.ObjectId
@@ -92,7 +92,7 @@ function escapeRegex(value: string) {
 
 function objectId(id: string): Types.ObjectId {
   if (!/^[a-f\d]{24}$/i.test(id)) {
-    throw new ExploreError(400, 'INVALID_INPUT', 'Identifiant de mission invalide.')
+    throw new BadRequestError('Identifiant de mission invalide.')
   }
   return new Types.ObjectId(id)
 }
@@ -153,7 +153,7 @@ export async function getOpenMission(userId: string, missionId: string): Promise
   })
 
   if (!mission) {
-    throw new ExploreError(404, 'NOT_FOUND', 'Mission introuvable.')
+    throw new NotFoundError('Mission introuvable.')
   }
 
   const [owner, application] = await Promise.all([

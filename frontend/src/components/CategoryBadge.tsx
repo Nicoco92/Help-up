@@ -1,29 +1,8 @@
-import {
-  Baby,
-  BookOpen,
-  CodeXml,
-  Dog,
-  Hammer,
-  Leaf,
-  ShoppingBasket,
-  Tag,
-  Truck,
-  type LucideIcon,
-} from 'lucide-react'
-
-const categoryIcons: Record<string, LucideIcon> = {
-  bricolage: Hammer,
-  informatique: CodeXml,
-  'soutien-scolaire': BookOpen,
-  courses: ShoppingBasket,
-  demenagement: Truck,
-  animaux: Dog,
-  jardinage: Leaf,
-  'garde-enfants': Baby,
-}
+import { Tag } from 'lucide-react'
+import { getCategory } from '../constants/categories'
 
 export function CategoryBadge({ category, label }: { category: string; label: string }) {
-  const Icon = categoryIcons[category] ?? Tag
+  const Icon = getCategory(category)?.icon ?? Tag
 
   return (
     <span className="category-label">

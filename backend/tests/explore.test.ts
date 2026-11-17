@@ -1,14 +1,27 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose, { Types } from 'mongoose'
-import jwt from 'jsonwebtoken'
 import request from 'supertest'
 import app from '../src/app'
+import { signToken } from '../src/utils/jwt'
 
 const jwtSecret = 'explore-test-secret'
 let mongoServer: MongoMemoryServer
 
-function tokenFor(userId: Types.ObjectId) {
-  return jwt.sign({ sub: userId.toHexString() }, jwtSecret, { expiresIn: 3600 })
+// requireAuth relit l'utilisateur en base : on crée un compte minimal s'il n'existe pas encore.
+async function tokenFor(userId: Types.ObjectId) {
+  await mongoose.connection.collection('users').updateOne(
+    { _id: userId },
+    {
+      $setOnInsert: {
+        firstName: 'Viewer',
+        lastName: 'Test',
+        email: `${userId.toHexString()}@example.test`,
+        role: 'client',
+      },
+    },
+    { upsert: true },
+  )
+  return signToken(userId.toHexString())
 }
 
 function makeMission(ownerId: Types.ObjectId, overrides: Record<string, unknown> = {}) {
@@ -53,6 +66,22 @@ afterAll(async () => {
 })
 
 describe('GET /api/explore/missions', () => {
+  test('accepte le jeton reçu à l’inscription (intégration avec /api/auth)', async () => {
+    const register = await request(app).post('/api/auth/register').send({
+      email: 'explore@helpup.test',
+      password: 'password123',
+      firstName: 'Camille',
+      lastName: 'Durand',
+    })
+    expect(register.status).toBe(201)
+
+    const response = await request(app)
+      .get('/api/explore/missions')
+      .set('Authorization', `Bearer ${register.body.token}`)
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({ items: [] })
+  })
+
   test('requiert un JWT et retourne uniquement les missions ouvertes des autres membres', async () => {
     const viewer = new Types.ObjectId()
     const owner = new Types.ObjectId()
@@ -74,7 +103,7 @@ describe('GET /api/explore/missions', () => {
 
     const response = await request(app)
       .get('/api/explore/missions')
-      .set('Authorization', `Bearer ${tokenFor(viewer)}`)
+      .set('Authorization', `Bearer ${await tokenFor(viewer)}`)
 
     expect(response.status).toBe(200)
     expect(response.body.items).toHaveLength(1)
@@ -105,7 +134,7 @@ describe('GET /api/explore/missions', () => {
 
     const response = await request(app)
       .get('/api/explore/missions?q=chat&category=animaux&minReward=30&maxReward=40')
-      .set('Authorization', `Bearer ${tokenFor(viewer)}`)
+      .set('Authorization', `Bearer ${await tokenFor(viewer)}`)
 
     expect(response.status).toBe(200)
     expect(response.body.items).toHaveLength(1)
@@ -125,7 +154,7 @@ describe('GET /api/explore/missions', () => {
 
     const response = await request(app)
       .get('/api/explore/missions?q=bab')
-      .set('Authorization', `Bearer ${tokenFor(viewer)}`)
+      .set('Authorization', `Bearer ${await tokenFor(viewer)}`)
 
     expect(response.status).toBe(200)
     expect(response.body.items).toHaveLength(1)
@@ -135,7 +164,7 @@ describe('GET /api/explore/missions', () => {
   test('rejette les filtres invalides', async () => {
     const response = await request(app)
       .get('/api/explore/missions?category=inconnue')
-      .set('Authorization', `Bearer ${tokenFor(new Types.ObjectId())}`)
+      .set('Authorization', `Bearer ${await tokenFor(new Types.ObjectId())}`)
 
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe('INVALID_INPUT')
@@ -161,7 +190,7 @@ describe('GET /api/explore/missions', () => {
 
     const response = await request(app)
       .get('/api/explore/missions?sort=reward_asc')
-      .set('Authorization', `Bearer ${tokenFor(viewer)}`)
+      .set('Authorization', `Bearer ${await tokenFor(viewer)}`)
 
     expect(response.status).toBe(200)
     expect(response.body.items.map((mission: { title: string }) => mission.title)).toEqual([
@@ -192,7 +221,7 @@ describe('GET /api/explore/missions/:id', () => {
 
     const response = await request(app)
       .get(`/api/explore/missions/${insertedId.toHexString()}`)
-      .set('Authorization', `Bearer ${tokenFor(viewer)}`)
+      .set('Authorization', `Bearer ${await tokenFor(viewer)}`)
 
     expect(response.status).toBe(200)
     expect(response.body).toMatchObject({
@@ -205,7 +234,7 @@ describe('GET /api/explore/missions/:id', () => {
 
   test('retourne 400 pour un identifiant mal formé et 404 pour sa propre mission', async () => {
     const viewer = new Types.ObjectId()
-    const token = tokenFor(viewer)
+    const token = await tokenFor(viewer)
 
     const invalidId = await request(app)
       .get('/api/explore/missions/not-an-object-id')
