@@ -2,20 +2,20 @@ import type { Types } from 'mongoose';
 import { Mission, type IMission } from '../models/mission.model';
 import { Application } from '../models/application.model';
 import { User } from '../models/user.model';
+import { Review } from '../models/review.model';
 import { BadRequestError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
+import { PUBLIC_PERSON_FIELDS, toPublicPerson, type PublicPerson, type PublicPersonRecord } from '../utils/publicPerson';
 import { findMyMission, toMissionSummary, type MissionSummary } from './application.service';
 
 type MissionRecord = IMission & { _id: Types.ObjectId; createdAt: Date };
-type UserRecord = { _id: Types.ObjectId; firstName: string; lastName?: string; city?: string; avatarUrl?: string };
+type ReviewRecord = { _id: Types.ObjectId; missionId: Types.ObjectId; rating: number; comment?: string };
 
-// L'autre participant d'une mission : prénom, initiale du nom, ville
-export interface PublicPerson {
+// L'avis que j'ai laissé sur une mission terminée
+export interface MyReview {
     id: string;
-    firstName: string;
-    lastName: string;
-    city?: string;
-    avatarUrl?: string;
+    rating: number;
+    comment: string;
 }
 
 export interface DashboardMission extends MissionSummary {
@@ -26,6 +26,8 @@ export interface DashboardMission extends MissionSummary {
     totalApplications: number;
     // Le prestataire retenu (pour mes missions) ou le client (pour les missions obtenues)
     counterpart: PublicPerson | null;
+    // Missions terminées : mon avis sur l'autre participant (null = pas encore noté)
+    myReview: MyReview | null;
 }
 
 export interface Dashboard {
@@ -43,14 +45,6 @@ export interface Dashboard {
     // Les missions terminées, publiées ou réalisées, les plus récentes d'abord
     history: DashboardMission[];
 }
-
-const toPerson = (user: UserRecord): PublicPerson => ({
-    id: user._id.toHexString(),
-    firstName: user.firstName,
-    lastName: user.lastName ? `${user.lastName.charAt(0)}.` : '',
-    city: user.city,
-    avatarUrl: user.avatarUrl
-});
 
 export const dashboardService = {
     async get(userId: string): Promise<Dashboard> {
@@ -86,15 +80,23 @@ export const dashboardService = {
         const otherIds = all
             .map((m) => (m.ownerId.equals(me) ? m.providerId : m.ownerId))
             .filter((id): id is Types.ObjectId => Boolean(id));
-        const users = await User.find({ _id: { $in: otherIds } })
-            .select('firstName lastName city avatarUrl')
-            .lean<UserRecord[]>();
+        const [users, reviews] = await Promise.all([
+            User.find({ _id: { $in: otherIds } })
+                .select(PUBLIC_PERSON_FIELDS)
+                .lean<PublicPersonRecord[]>(),
+            // Mes avis sur les missions terminées, pour afficher « Laisser un avis » ou ma note
+            Review.find({ authorId: me, missionId: { $in: history.map((m) => m._id) } })
+                .select('missionId rating comment')
+                .lean<ReviewRecord[]>()
+        ]);
         const usersById = new Map(users.map((u) => [u._id.toHexString(), u]));
+        const reviewsByMission = new Map(reviews.map((r) => [r.missionId.toHexString(), r]));
 
         const toDashboardMission = (mission: MissionRecord): DashboardMission => {
             const role = mission.ownerId.equals(me) ? 'owner' : 'provider';
             const otherId = role === 'owner' ? mission.providerId : mission.ownerId;
             const other = otherId ? usersById.get(otherId.toHexString()) : undefined;
+            const review = reviewsByMission.get(mission._id.toHexString());
             return {
                 ...toMissionSummary(mission),
                 completedAt: mission.completedAt ?? null,
@@ -102,7 +104,8 @@ export const dashboardService = {
                 ...(role === 'owner' && mission.status !== 'completed'
                     ? countsOf(mission._id)
                     : { pendingApplications: 0, totalApplications: 0 }),
-                counterpart: other ? toPerson(other) : null
+                counterpart: other ? toPublicPerson(other) : null,
+                myReview: review ? { id: review._id.toHexString(), rating: review.rating, comment: review.comment ?? '' } : null
             };
         };
 

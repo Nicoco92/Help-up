@@ -6,6 +6,7 @@ import { Avatar } from '../components/Avatar'
 import { Alert } from '../components/Alert'
 import { TextField, TextAreaField } from '../components/Field'
 import { SkillList, SkillPicker } from '../components/Skills'
+import { UserReviews } from '../components/UserReviews'
 import { Spinner } from '../components/States'
 import { formatPhone, fullName, memberSince, profileCompletion } from '../utils/format'
 import {
@@ -51,6 +52,8 @@ function ProfileView({ user }: { user: User }) {
         </h2>
         <SkillList skills={user.skills} empty="Aucune compétence indiquée." />
       </section>
+
+      <UserReviews userId={user.id} empty="Tu n’as pas encore reçu d’avis. Ils apparaîtront ici après tes premières missions." />
 
       <section className="card__section">
         <h2 className="card__section-title">

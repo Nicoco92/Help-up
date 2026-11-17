@@ -12,6 +12,8 @@ import missionRoutes from './routes/missions.routes'
 import applicationRoutes from './routes/applications.routes'
 import missionApplicationRoutes from './routes/missionApplications.routes'
 import dashboardRoutes from './routes/dashboard.routes'
+import reviewRoutes from './routes/reviews.routes'
+import userReviewRoutes from './routes/userReviews.routes'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
 
 // Documentation OpenAPI (src/docs/openapi.yaml, copié dans dist/docs au build)
@@ -33,12 +35,15 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi))
 
 app.use('/api/auth', authRoutes)
+// Avant userRoutes : /api/users/:id/reviews ne passe pas deux fois par requireAuth
+app.use('/api/users', userReviewRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/explore', exploreRoutes)
 app.use('/api/missions', missionRoutes)
 app.use('/api/missions', missionApplicationRoutes)
 app.use('/api/applications', applicationRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/reviews', reviewRoutes)
 
 app.use('/api', notFoundHandler)
 app.use(errorHandler)

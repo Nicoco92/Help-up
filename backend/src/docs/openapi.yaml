@@ -19,6 +19,7 @@ tags:
   - name: Explore
   - name: Applications
   - name: Dashboard
+  - name: Reviews
 
 paths:
   /api/health:
@@ -209,6 +210,114 @@ paths:
               schema: { $ref: '#/components/schemas/Dashboard' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  # --- Avis (Romain) ---
+  /api/reviews:
+    get:
+      tags: [Reviews]
+      summary: Les avis que j'ai écrits (les plus récents d'abord)
+      responses:
+        '200':
+          description: Liste, vide si aucun avis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ReviewWithTarget' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Reviews]
+      summary: Noter l'autre participant d'une mission terminée
+      description: |
+        Je dois être le client ou le prestataire de la mission (sinon 404), elle doit être terminée (400), un seul avis par mission (409 CONFLICT).
+        `authorId` vient du JWT et `targetId` est déduit de la mission : les envoyer renvoie 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewInput' }
+      responses:
+        '201':
+          description: Avis créé
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewWithTarget' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/reviews/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Reviews]
+      summary: Un de mes avis
+      responses:
+        '200':
+          description: Avis
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewWithTarget' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Reviews]
+      summary: Modifier la note ou le commentaire (au moins un des deux)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              additionalProperties: false
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: Avis modifié
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewWithTarget' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Reviews]
+      summary: Supprimer un de mes avis
+      responses:
+        '204': { description: Avis supprimé }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/users/{id}/reviews:
+    parameters:
+      - { name: id, in: path, required: true, description: Id d'un membre, schema: { type: string } }
+    get:
+      tags: [Reviews]
+      summary: Avis reçus par un membre et sa note moyenne
+      responses:
+        '200':
+          description: Les 50 derniers avis reçus et la note moyenne (null si aucun avis)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ReviewWithAuthor' } }
+                  summary:
+                    type: object
+                    properties:
+                      average: { type: number, nullable: true, example: 4.5 }
+                      count: { type: integer, example: 2 }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -321,15 +430,17 @@ components:
             pendingApplications: { type: integer }
             totalApplications: { type: integer }
             counterpart:
-              type: object
+              allOf: [{ $ref: '#/components/schemas/PublicPerson' }]
               nullable: true
               description: Le prestataire retenu (mes missions) ou le client (missions obtenues)
+            myReview:
+              type: object
+              nullable: true
+              description: Missions terminées — mon avis sur l'autre participant (null = pas encore noté)
               properties:
                 id: { type: string }
-                firstName: { type: string }
-                lastName: { type: string, example: D. }
-                city: { type: string }
-                avatarUrl: { type: string }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
 
     Dashboard:
       type: object
@@ -345,6 +456,57 @@ components:
         published: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
         obtained: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
         history: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
+
+    PublicPerson:
+      type: object
+      properties:
+        id: { type: string }
+        firstName: { type: string }
+        lastName: { type: string, description: Initiale seulement, example: D. }
+        city: { type: string }
+        avatarUrl: { type: string }
+
+    Review:
+      type: object
+      properties:
+        id: { type: string }
+        missionId: { type: string }
+        authorId: { type: string }
+        targetId: { type: string, description: L'autre participant de la mission, déduit par le serveur }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, maxLength: 500 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        mission:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string }
+            title: { type: string }
+            category: { type: string }
+
+    ReviewInput:
+      type: object
+      required: [missionId, rating]
+      additionalProperties: false
+      properties:
+        missionId: { type: string, example: 6650f0c2a1b2c3d4e5f60789 }
+        rating: { type: integer, minimum: 1, maximum: 5, example: 5 }
+        comment: { type: string, maxLength: 500, example: Ponctuel et très soigneux. }
+
+    ReviewWithTarget:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            target: { allOf: [{ $ref: '#/components/schemas/PublicPerson' }], nullable: true }
+
+    ReviewWithAuthor:
+      allOf:
+        - $ref: '#/components/schemas/Review'
+        - type: object
+          properties:
+            author: { allOf: [{ $ref: '#/components/schemas/PublicPerson' }], nullable: true }
 
   # Réponses d'erreur réutilisables : $ref: '#/components/responses/NotFound'
   responses:
@@ -364,7 +526,7 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Conflict:
-      description: Doublon (email déjà utilisé, candidature déjà envoyée)
+      description: Doublon (email déjà utilisé, candidature ou avis déjà envoyé)
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

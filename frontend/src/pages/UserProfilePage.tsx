@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import { Avatar } from '../components/Avatar'
 import { Alert } from '../components/Alert'
 import { SkillList } from '../components/Skills'
+import { UserReviews } from '../components/UserReviews'
 import { EmptyState, PageLoader } from '../components/States'
 import { formatPhone, fullName, memberSince } from '../utils/format'
 
@@ -134,6 +135,8 @@ export function UserProfilePage() {
             </h2>
             <SkillList skills={profile.skills} empty="Aucune compétence indiquée." />
           </section>
+
+          <UserReviews userId={profile.id} empty={`${profile.firstName} n’a pas encore reçu d’avis.`} />
 
           {/* Coordonnées : renvoyées par l'API uniquement à un administrateur. */}
           {isAdmin && (profile.email || profile.phone) && (

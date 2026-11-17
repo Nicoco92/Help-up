@@ -9,6 +9,7 @@ import type {
 import type { Mission, MissionListResponse } from '../types/mission'
 import type { Application } from '../types/application'
 import type { Dashboard } from '../types/dashboard'
+import type { Review, ReviewPayload, UserReviews } from '../types/review'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -144,4 +145,15 @@ export const dashboardApi = {
   get: () => request<Dashboard>('/dashboard'),
   completeMission: (missionId: string) =>
     request<Mission>(`/missions/${encodeURIComponent(missionId)}/complete`, { method: 'POST' }),
+}
+
+// Avis : ceux que j'écris (/reviews) et ceux reçus par un membre (/users/:id/reviews).
+export const reviewsApi = {
+  listMine: () => request<{ items: Review[] }>('/reviews'),
+  create: (missionId: string, payload: ReviewPayload) =>
+    request<Review>('/reviews', json('POST', { missionId, ...payload })),
+  update: (id: string, payload: Partial<ReviewPayload>) =>
+    request<Review>(`/reviews/${encodeURIComponent(id)}`, json('PATCH', payload)),
+  remove: (id: string) => request<void>(`/reviews/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  listForUser: (userId: string) => request<UserReviews>(`/users/${encodeURIComponent(userId)}/reviews`),
 }
