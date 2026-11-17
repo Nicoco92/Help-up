@@ -10,6 +10,7 @@ import type { Mission, MissionListResponse } from '../types/mission'
 import type { Application } from '../types/application'
 import type { Dashboard } from '../types/dashboard'
 import type { Review, ReviewPayload, UserReviews } from '../types/review'
+import type { AppNotification, NotificationList } from '../types/notification'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -156,4 +157,19 @@ export const reviewsApi = {
     request<Review>(`/reviews/${encodeURIComponent(id)}`, json('PATCH', payload)),
   remove: (id: string) => request<void>(`/reviews/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   listForUser: (userId: string) => request<UserReviews>(`/users/${encodeURIComponent(userId)}/reviews`),
+}
+
+// Émis après une action sur les notifications, pour mettre à jour la pastille de la cloche.
+export const NOTIFICATIONS_CHANGED_EVENT = 'helpup:notifications-changed'
+
+// Notifications : créées par le serveur, l'utilisateur les lit, les marque et les supprime.
+export const notificationsApi = {
+  list: (unreadOnly = false) =>
+    request<NotificationList>(`/notifications${unreadOnly ? '?unread=true' : ''}`),
+  unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
+  markRead: (id: string, read: boolean) =>
+    request<AppNotification>(`/notifications/${encodeURIComponent(id)}`, json('PATCH', { read })),
+  markAllRead: () => request<{ updated: number }>('/notifications/read-all', { method: 'POST' }),
+  remove: (id: string) =>
+    request<void>(`/notifications/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 }
