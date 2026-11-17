@@ -32,7 +32,7 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 - **Tests** : Jest et Supertest, avec `mongodb-memory-server` comme base isolée.
 - **Documentation** : README.md, `.env.example` sans aucun secret, Swagger/OpenAPI (`swagger-ui-express` et `yaml`).
 
-## État actuel (branche `webromain` ; Romain commite et pousse lui-même)
+## État actuel (une branche par feature, ex. `feat/applications` pour Romain ; Romain commite et pousse lui-même)
 ```
 full-stack-js/
 ├── compose.yaml              # mongo:7.0 (auth, hôte 127.0.0.1:27017), backend, frontend, mongo-express (profil "tools", auth)
