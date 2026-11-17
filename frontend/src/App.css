@@ -844,7 +844,11 @@
   align-items: center;
   gap: 8px;
   margin-bottom: var(--space-4);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--color-tint);
+  cursor: pointer;
   font-weight: 650;
   text-decoration: none;
 }
