@@ -4,6 +4,7 @@ import { CheckCircle2, Send } from 'lucide-react';
 import { ApiError, applicationsApi } from '../services/api';
 import { TextAreaField } from './Field';
 import { Alert } from './Alert';
+import { useDraft } from '../hooks/useDraft';
 import '../styles/applications.css';
 
 const MIN = 10;
@@ -12,7 +13,8 @@ const MAX = 500;
 // Formulaire « Postuler » de la page détail d'une mission
 // Le serveur revérifie tout : message, mission ouverte, pas la sienne, une seule candidature
 export function ApplyPanel({ missionId, onApplied }: { missionId: string; onApplied?: () => void }) {
-    const [message, setMessage] = useState('');
+    // Brouillon conservé si la session expire pendant la saisie
+    const [message, setMessage, clearDraft] = useDraft(`apply.${missionId}`, '');
     const [error, setError] = useState<string | null>(null);
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -30,6 +32,7 @@ export function ApplyPanel({ missionId, onApplied }: { missionId: string; onAppl
         setError(null);
         try {
             await applicationsApi.create({ missionId, message: message.trim() });
+            clearDraft();
             setSent(true);
             onApplied?.();
         } catch (cause) {

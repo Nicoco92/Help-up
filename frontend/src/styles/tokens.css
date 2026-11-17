@@ -1,5 +1,7 @@
 /* HelpUP — variables de la charte (docs/charte-graphique.md §12). Source unique : ne pas redéfinir ailleurs.
-   Mode sombre automatique via prefers-color-scheme. */
+   Mode sombre automatique via prefers-color-scheme.
+   Contrastes visés : WCAG 2.2 niveau AAA (7:1 pour le texte, 3:1 pour les bordures de champ), en clair ET en sombre.
+   Vérification : docs/accessibilite.md (tableau des contrastes). */
 @import '@fontsource-variable/plus-jakarta-sans';
 
 :root {
@@ -8,16 +10,16 @@
   --color-surface: #ffffff;
   --color-surface-tinted: #d8ebdd;
   --color-label: #242b27;
-  --color-label-secondary: #5e6762;
+  --color-label-secondary: #464c49;
   --color-tint: #174f40;
   --color-tint-pressed: #123f33;
   --color-on-tint: #ffffff;
   --color-signal: #f3a66b;
   --color-on-signal: #242b27;
-  --color-signal-ink: #a84e17;
-  --color-danger: #b3261e;
+  --color-signal-ink: #793811;
+  --color-danger: #9a211a;
   --color-danger-surface: #fbeceb;
-  --color-field-border: #8c948f;
+  --color-field-border: #88908b;
   --color-separator: #e8ebe7;
   --font-display: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
   --font-text:
@@ -48,6 +50,13 @@
   --radius-pill: 999px;
   --shadow-raised: 0 1px 2px rgb(23 79 64 / 0.06), 0 8px 24px rgb(23 79 64 / 0.08);
   --control-height: 44px;
+  /* Plus petite cible cliquable autorisée (WCAG 2.5.5 AAA, HIG accessibility.md › Mobility) */
+  --target-min: 44px;
+  /* Anneau de focus : 3 px, contraste ≥ 3:1 avec le fond (WCAG 2.4.13 AAA) */
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  /* Hauteur de la barre de navigation collante : le focus ne passe jamais dessous (WCAG 2.4.12) */
+  --navbar-height: 64px;
   --control-height-primary: 48px;
   --duration-fast: 100ms;
   --duration-base: 150ms;
@@ -62,18 +71,34 @@
     --color-surface: #1c211e;
     --color-surface-tinted: #1e3a31;
     --color-label: #edefea;
-    --color-label-secondary: #a3aba6;
-    --color-tint: #5fbf97;
-    --color-tint-pressed: #4fa984;
+    --color-label-secondary: #bfc5c1;
+    --color-tint: #8dd2b5;
+    --color-tint-pressed: #a9dfc8;
     --color-on-tint: #0e2a22;
     --color-signal: #f3a66b;
     --color-on-signal: #121614;
     --color-signal-ink: #f3a66b;
-    --color-danger: #ff8a80;
+    --color-danger: #ff9187;
     --color-danger-surface: #3a1d1b;
     --color-field-border: #6f7873;
     --color-separator: #2e3632;
     --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  }
+}
+
+/* Contraste renforcé demandé par le système (Windows, macOS « Augmenter le contraste ») :
+   séparateurs et bordures deviennent visibles, le texte secondaire rejoint le texte principal */
+@media (prefers-contrast: more) {
+  :root {
+    --color-label-secondary: var(--color-label);
+    --color-separator: var(--color-field-border);
+    --color-field-border: #4f5753;
+  }
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root {
+    --color-field-border: #aab2ad;
   }
 }
 

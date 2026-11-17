@@ -84,6 +84,7 @@ npm 11.19 affiche des warnings `install-scripts not yet covered by allowScripts`
 - Référence : `docs/charte-graphique.md` (basée sur le skill global `apple-design`, HIG Apple). Tout le style du frontend en découle.
 - Vert `#174F40` = marque et action principale ; orange `#F3A66B` = signal (urgent/nouveau) uniquement, **jamais en texte sur fond clair** (1,85:1).
 - Couleurs uniquement via les variables CSS sémantiques (section 12), mode sombre via `prefers-color-scheme`, sans bouton propre au site.
+- **Accessibilité WCAG 2.2 AAA** (au-delà du RGAA 4.1) : `docs/accessibilite.md`. Texte ≥ 7:1 en clair et en sombre, cibles ≥ 44 px (`--target-min`, y compris `.btn--sm`), anneau de focus 3 px (`--focus-ring-width`), lien d'évitement + `RouteAnnouncer` (titre d'onglet, focus sur le h1, annonce), filtres en `aria-pressed` (pas de `role="tablist"`), `useDraft` pour garder une saisie si la session expire, `prefers-contrast`/`forced-colors`/`prefers-reduced-motion` gérés.
 - Plus Jakarta Sans (titres, prix) + police système (texte, contrôles). Icônes Lucide. Carte Leaflet + OpenStreetMap.
 
 ## Contrat API v1 du livret (à respecter exactement)

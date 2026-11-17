@@ -16,8 +16,8 @@ export function Alert({ variant = 'info', children, onClose }: AlertProps) {
       <Icon size={18} aria-hidden="true" />
       <div className="alert__body">{children}</div>
       {onClose && (
-        <button type="button" className="alert__close" onClick={onClose} aria-label="Fermer">
-          <X size={16} />
+        <button type="button" className="alert__close" onClick={onClose} aria-label="Fermer le message">
+          <X size={16} aria-hidden="true" />
         </button>
       )}
     </div>

@@ -13,6 +13,9 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* La barre de navigation est collante : un élément atteint au clavier ou par une ancre
+     s'arrête sous elle, jamais derrière (WCAG 2.4.11 et 2.4.12) */
+  scroll-padding-top: calc(var(--navbar-height) + var(--space-4));
 }
 
 body {
@@ -47,6 +50,24 @@ p {
   margin: 0;
 }
 
+/* Présentation du texte (WCAG 1.4.8 AAA) : lignes de 80 caractères au plus, jamais justifiées,
+   interligne 1,5 (body) et espace entre paragraphes au moins 1,5 fois l'interligne */
+main p {
+  max-width: 80ch;
+  text-align: start;
+}
+
+main p + p {
+  margin-top: 1.5em;
+}
+
+/* Un lien dans du texte se distingue autrement que par la couleur (WCAG 1.4.1, RGAA 3.1) */
+main p a:not(.btn),
+main li > a:not([class]) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 a {
   color: var(--color-tint);
   text-decoration: none;
@@ -58,10 +79,43 @@ a:hover {
   text-underline-offset: 3px;
 }
 
+/* Focus clavier toujours visible : anneau de 3 px, contraste ≥ 3:1 sur tous les fonds (WCAG 2.4.7, 2.4.13 AAA) */
 :focus-visible {
-  outline: 2px solid var(--color-tint);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--color-tint);
+  outline-offset: var(--focus-ring-offset);
   border-radius: 4px;
+}
+
+/* Cible du lien d'évitement et des titres qui reçoivent le focus au changement de page */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+[tabindex='-1']:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-tint);
+}
+
+/* Lien d'évitement (RGAA 12.7) : invisible jusqu'à ce qu'il reçoive le focus */
+.skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-button);
+  background: var(--color-tint);
+  color: var(--color-on-tint);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: none;
+  text-decoration: none;
 }
 
 button,
@@ -80,8 +134,12 @@ svg {
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
@@ -482,7 +540,8 @@ select {
 }
 
 .btn--sm {
-  min-height: 36px;
+  /* Plus compact visuellement, mais la cible reste de 44 px (WCAG 2.5.5 AAA) */
+  min-height: var(--target-min);
   padding: 0 var(--space-3);
   font-size: var(--text-footnote);
 }
@@ -593,9 +652,9 @@ select {
 .input:focus,
 .textarea:focus,
 .select:focus {
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--color-tint);
+  outline-offset: 1px;
   border-color: var(--color-tint);
-  box-shadow: 0 0 0 1px var(--color-tint);
 }
 
 .input:disabled {
@@ -714,7 +773,7 @@ select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
+  min-height: var(--target-min);
   padding: 0 var(--space-3);
   border-radius: var(--radius-pill);
   border: 1px solid var(--color-separator);
@@ -817,9 +876,9 @@ button.chip[aria-pressed='true'] {
 .alert__close {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  margin: -4px -8px -4px 0;
+  width: var(--target-min);
+  height: var(--target-min);
+  margin: -10px -12px -10px 0;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -1641,5 +1700,45 @@ button.chip[aria-pressed='true'] {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------- Accessibilité : préférences du système (charte §11, docs/accessibilite.md) ---------- */
+
+/* Mouvement réduit : plus d'animation ni de défilement animé (WCAG 2.3.3 AAA, HIG accessibility.md › Cognitive) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Couleurs forcées (Windows, contraste élevé) : les fonds disparaissent, on garde des bordures */
+@media (forced-colors: active) {
+  .btn,
+  .badge,
+  .card,
+  .segmented__item,
+  .notification-bell__count,
+  .notification__new,
+  .application-badge {
+    border: 1px solid CanvasText;
+  }
+
+  :focus-visible {
+    outline-color: Highlight;
+  }
+
+  .rating-stars svg.is-on,
+  .star-input__star.is-on svg {
+    fill: CanvasText;
   }
 }

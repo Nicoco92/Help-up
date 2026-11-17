@@ -51,8 +51,8 @@ Répartition visée : **60 %** fonds crème et blancs · **25 %** vert et ses d�
    > `color.md › Best practices` : « Avoid using the same color to mean different things. »
 
 2. **L'orange n'est jamais une couleur de texte sur fond clair.**
-   `#F3A66B` sur crème = **1,85:1**, très loin du 4,5:1 exigé. L'orange sert de **fond** (avec texte Charcoal, 7,23:1), ou on utilise sa version foncée `--color-signal-ink` `#A84E17` pour du texte (5,15:1).
-   > `accessibility.md › Vision` : texte jusqu'à 17 pt → 4,5:1 minimum ; 18 pt ou gras → 3:1.
+   `#F3A66B` sur crème = **1,85:1**, très loin des 7:1 visés. L'orange sert de **fond** (avec texte Charcoal, 7,23:1), ou on utilise sa version foncée `--color-signal-ink` `#793811` pour du texte (8,1:1).
+   > `accessibility.md › Vision` : « Strive to meet color contrast minimum standards. » Apple cite les seuils WCAG **AA** (4,5:1, 3:1) comme minimum ; HelpUP vise le niveau **AAA** (7:1 pour le texte, 4,5:1 pour le grand texte), voir `docs/accessibilite.md`.
 
 ### 2.3 Couleurs sémantiques (clair et sombre)
 
@@ -60,24 +60,28 @@ Le code n'utilise **jamais** un hex directement : uniquement ces variables. Le m
 > `dark-mode.md › Best practices` : « Avoid offering an app-specific appearance setting. »
 > `color.md › Best practices` : « Make sure all your app's colors work well in light, dark, and increased contrast contexts. »
 
+Objectif : **WCAG 2.2 niveau AAA** (critère 1.4.6) dans les deux apparences : 7:1 pour tout texte, 3:1 pour les bordures de champ.
+
 | Variable | Usage | Clair | Contraste | Sombre | Contraste |
 |---|---|---|---|---|---|
 | `--color-bg` | Fond de page | `#F7F6F0` | — | `#121614` | — |
 | `--color-surface` | Cartes, panneaux, champs | `#FFFFFF` | — | `#1C211E` | — |
 | `--color-surface-tinted` | Badges, zones secondaires | `#D8EBDD` | — | `#1E3A31` | — |
 | `--color-label` | Texte principal | `#242B27` | 13,4 (bg) · 14,5 (surface) | `#EDEFEA` | 15,8 (bg) · 14,1 (surface) |
-| `--color-label-secondary` | Texte secondaire, méta | `#5E6762` | 5,4 (bg) · 4,7 (tinted) | `#A3ABA6` | 7,8 (bg) · 5,2 (tinted) |
-| `--color-tint` | Marque, liens, prix, sélection | `#174F40` | 8,7 (bg) · 7,6 (tinted) | `#5FBF97` | 8,2 (bg) · 5,5 (tinted) |
-| `--color-tint-pressed` | Bouton principal appuyé | `#123F33` | — | `#4FA984` | — |
-| `--color-on-tint` | Texte sur fond vert | `#FFFFFF` | 9,4 | `#0E2A22` | 6,8 |
+| `--color-label-secondary` | Texte secondaire, méta | `#464C49` | 8,1 (bg) · 7,0 (tinted) | `#BFC5C1` | 10,4 (bg) · 7,0 (tinted) |
+| `--color-tint` | Marque, liens, prix, sélection, anneau de focus | `#174F40` | 8,7 (bg) · 7,6 (tinted) | `#8DD2B5` | 10,4 (bg) · 7,0 (tinted) |
+| `--color-tint-pressed` | Bouton principal appuyé | `#123F33` | — | `#A9DFC8` | — |
+| `--color-on-tint` | Texte sur fond vert | `#FFFFFF` | 9,4 | `#0E2A22` | 8,8 (10,3 appuyé) |
 | `--color-signal` | Fond « urgent / nouveau » | `#F3A66B` | — | `#F3A66B` | — |
 | `--color-on-signal` | Texte sur fond orange | `#242B27` | 7,2 | `#121614` | 9,1 |
-| `--color-signal-ink` | Texte orange (rare) | `#A84E17` | 5,2 (bg) · 5,6 (surface) | `#F3A66B` | 8,2 (surface) |
-| `--color-danger` | Supprimer, erreur | `#B3261E` | 6,0 (bg) · 6,5 (surface) | `#FF8A80` | 7,2 (surface) |
-| `--color-field-border` | Bordure des champs | `#8C948F` | 3,1 (surface) | `#6F7873` | 3,6 (surface) |
+| `--color-signal-ink` | Texte orange (rare) | `#793811` | 8,1 (bg) · 8,8 (surface) | `#F3A66B` | 8,1 (surface) |
+| `--color-danger` | Supprimer, erreur | `#9A211A` | 7,4 (bg) · 7,0 (danger-surface) | `#FF9187` | 7,5 (surface) · 7,0 (danger-surface) |
+| `--color-field-border` | Bordure des champs | `#88908B` | 3,3 (surface) · 3,0 (bg) | `#6F7873` | 3,6 (surface) |
 | `--color-separator` | Bordure de carte, séparateur | `#E8EBE7` | décoratif | `#2E3632` | décoratif |
 
-Contrastes calculés selon WCAG 2.2 à partir des valeurs hex. Une bordure de champ doit atteindre 3:1 car elle indique où cliquer ; un séparateur purement décoratif n'a pas d'exigence.
+Contrastes calculés selon WCAG 2.2 à partir des valeurs hex (novembre 2026 : texte secondaire, vert sombre, encre orange et rouge foncés ou éclaircis pour passer de AA à AAA, sans changer leur teinte).
+Quand le système demande **plus de contraste** (`prefers-contrast: more`), le texte secondaire prend la couleur du texte principal et les séparateurs deviennent des bordures visibles.
+> `accessibility.md › Vision` : « ensure it at least provides a higher contrast color scheme when the system setting Increase Contrast is turned on. » Une bordure de champ doit atteindre 3:1 car elle indique où cliquer ; un séparateur purement décoratif n'a pas d'exigence.
 
 ### 2.4 Jamais la couleur seule
 
@@ -169,7 +173,7 @@ Ombre unique, réservée au survol et aux éléments flottants :
 
 ### 4.3 Cibles et espacement des contrôles
 
-- Toute zone cliquable fait **au moins 44 × 44 px** (boutons : 44 px de haut, 48 px pour l'action principale d'un écran).
+- Toute zone cliquable fait **au moins 44 × 44 px**, **sans exception** (WCAG 2.5.5 AAA) : boutons, petits boutons (`.btn--sm` est plus compact visuellement mais garde 44 px de haut), puces, filtres, croix de fermeture, étoiles de notation, cloche. 48 px pour l'action principale d'un écran. Les marqueurs de la carte (32 px de haut) ont une zone cliquable agrandie à 44 px. Variable : `--target-min`.
   > `buttons.md › Best practices` : « A button needs a hit region of at least 44x44 pt. »
 - **12 px** minimum entre deux boutons ; **24 px** autour d'un lien ou d'une icône sans fond.
   > `accessibility.md › Mobility` : « Add about 12 points of padding around elements that include a bezel. For elements without a bezel, about 24 points of padding works well. »
@@ -381,14 +385,18 @@ Accroches de marque : « Une mission près de chez toi ? » · « Ton temps a de
 
 ## 11. Accessibilité — à vérifier avant chaque démo
 
-- [ ] Texte ≥ 4,5:1, grand texte et éléments graphiques ≥ 3:1 (tableau 2.3).
+- [ ] Texte ≥ **7:1**, grand texte ≥ 4,5:1, bordures de champ et éléments graphiques ≥ 3:1 (tableau 2.3, niveau AAA).
 - [ ] Aucun statut indiqué par la couleur seule (icône + libellé).
-- [ ] Zones cliquables ≥ 44 × 44 px, 12 px entre deux boutons.
+- [ ] Zones cliquables ≥ 44 × 44 px partout, 12 px entre deux boutons.
+- [ ] Anneau de focus de 3 px (`--focus-ring-width`), jamais caché sous la barre de navigation (`scroll-padding-top`).
+- [ ] Lien « Aller au contenu » en premier au clavier ; chaque page a son titre d'onglet, le focus va sur le `h1` à chaque changement de page.
+- [ ] Texte : 80 caractères par ligne au plus, interligne 1,5, jamais justifié ; liens soulignés dans le texte.
 - [ ] Tout le parcours se fait **au clavier** (Tab, Entrée, Échap ferme les modales), focus toujours visible.
 - [ ] Zoom navigateur à 200 % : rien ne disparaît, rien ne déborde horizontalement.
 - [ ] Mode sombre testé sur chaque écran.
 - [ ] `prefers-reduced-motion`, `prefers-reduced-transparency`, `prefers-contrast` ont une réponse.
 - [ ] Images : `alt` descriptif ; icônes seules : `aria-label`.
+- [ ] Grille complète (RGAA, WCAG AAA) et procédure de test : `docs/accessibilite.md`.
 
 > `accessibility.md › Speech` : « Let people use the keyboard alone to navigate and interact with your app. »
 
@@ -405,15 +413,15 @@ Accroches de marque : « Une mission près de chez toi ? » · « Ton temps a de
   --color-surface: #FFFFFF;
   --color-surface-tinted: #D8EBDD;
   --color-label: #242B27;
-  --color-label-secondary: #5E6762;
+  --color-label-secondary: #464C49;
   --color-tint: #174F40;
   --color-tint-pressed: #123F33;
   --color-on-tint: #FFFFFF;
   --color-signal: #F3A66B;
   --color-on-signal: #242B27;
-  --color-signal-ink: #A84E17;
-  --color-danger: #B3261E;
-  --color-field-border: #8C948F;
+  --color-signal-ink: #793811;
+  --color-danger: #9A211A;
+  --color-field-border: #88908B;
   --color-separator: #E8EBE7;
 
   /* Typographie */
@@ -457,14 +465,14 @@ Accroches de marque : « Une mission près de chez toi ? » · « Ton temps a de
     --color-surface: #1C211E;
     --color-surface-tinted: #1E3A31;
     --color-label: #EDEFEA;
-    --color-label-secondary: #A3ABA6;
-    --color-tint: #5FBF97;
-    --color-tint-pressed: #4FA984;
+    --color-label-secondary: #BFC5C1;
+    --color-tint: #8DD2B5;
+    --color-tint-pressed: #A9DFC8;
     --color-on-tint: #0E2A22;
     --color-signal: #F3A66B;
     --color-on-signal: #121614;
     --color-signal-ink: #F3A66B;
-    --color-danger: #FF8A80;
+    --color-danger: #FF9187;
     --color-field-border: #6F7873;
     --color-separator: #2E3632;
     --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
@@ -491,5 +499,6 @@ body {
 ## Sources
 
 - Apple, *Human Interface Guidelines* (version locale du skill `apple-design`) : `branding.md`, `color.md`, `dark-mode.md`, `accessibility.md`, `typography.md`, `layout.md`, `buttons.md`, `maps.md`, `writing.md`, `liquid-glass.md`.
-- W3C, *WCAG 2.2* niveau AA : seuils de contraste 4,5:1 et 3:1.
+- W3C, *WCAG 2.2* niveau AAA : contraste amélioré 7:1 (1.4.6), cibles 44 px (2.5.5), apparence du focus (2.4.13).
+- DINUM, *RGAA 4.1* : référentiel français, fondé sur WCAG 2.1 AA (voir `docs/accessibilite.md`).
 - Contrastes calculés par l'équipe à partir des valeurs hex (formule de luminance relative WCAG).
