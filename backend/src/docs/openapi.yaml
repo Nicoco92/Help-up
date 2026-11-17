@@ -20,6 +20,7 @@ tags:
   - name: Applications
   - name: Dashboard
   - name: Reviews
+  - name: Notifications
 
 paths:
   /api/health:
@@ -318,6 +319,105 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  # --- Notifications (Romain) ---
+  /api/notifications:
+    get:
+      tags: [Notifications]
+      summary: Mes 50 dernières notifications et le nombre de non lues
+      description: |
+        Créées uniquement par le serveur : nouvelle mission près de chez moi (même ville + compétence), candidature reçue,
+        acceptée ou refusée, mission terminée, avis reçu. Supprimées automatiquement après 90 jours.
+      parameters:
+        - { name: unread, in: query, required: false, description: true = seulement les non lues, schema: { type: string, enum: ['true', 'false'] } }
+      responses:
+        '200':
+          description: Liste, vide si aucune notification
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Notification' } }
+                  unreadCount: { type: integer, example: 2 }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Nombre de notifications non lues (pastille de la cloche)
+      responses:
+        '200':
+          description: Compteur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer, example: 2 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/notifications/read-all:
+    post:
+      tags: [Notifications]
+      summary: Tout marquer comme lu
+      responses:
+        '200':
+          description: Nombre de notifications passées en lues
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated: { type: integer, example: 2 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/notifications/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Notifications]
+      summary: Une de mes notifications
+      responses:
+        '200':
+          description: Notification
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Notification' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Notifications]
+      summary: Marquer comme lue ou non lue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [read]
+              additionalProperties: false
+              properties:
+                read: { type: boolean }
+      responses:
+        '200':
+          description: Notification modifiée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Notification' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Notifications]
+      summary: Supprimer une de mes notifications
+      responses:
+        '204': { description: Notification supprimée }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -507,6 +607,20 @@ components:
         - type: object
           properties:
             author: { allOf: [{ $ref: '#/components/schemas/PublicPerson' }], nullable: true }
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        type:
+          type: string
+          enum: [mission_nearby, application_received, application_accepted, application_rejected, mission_completed, review_received]
+        message: { type: string, example: Bob N. a postulé à « Monter une armoire ». }
+        link: { type: string, description: Page du front à ouvrir, example: /dashboard }
+        missionId: { type: string, nullable: true }
+        read: { type: boolean }
+        readAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
 
   # Réponses d'erreur réutilisables : $ref: '#/components/responses/NotFound'
   responses:

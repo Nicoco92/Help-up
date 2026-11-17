@@ -4,6 +4,7 @@ import { ChevronDown, Compass, FileText, LayoutDashboard, LogOut, Menu, Shield, 
 import { useAuth } from '../hooks/useAuth'
 import { Logo } from './Logo'
 import { Avatar } from './Avatar'
+import { NotificationBell } from './NotificationBell'
 import { fullName } from '../utils/format'
 
 function AccountMenu() {
@@ -141,6 +142,7 @@ export function Navbar() {
         <div className="navbar__actions">
           {status === 'loading' ? null : isAuthenticated ? (
             <>
+              <NotificationBell />
               <AccountMenu />
               <button
                 type="button"

@@ -5,6 +5,7 @@ import { User } from '../models/user.model';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
 import { PUBLIC_PERSON_FIELDS, toPublicPerson, type PublicPerson, type PublicPersonRecord } from '../utils/publicPerson';
+import { notify } from './notification.service';
 import type { CreateReviewInput, UpdateReviewInput } from '../validators/review.validator';
 
 // Documents lus avec .lean() : objets simples, avec leur _id
@@ -123,6 +124,11 @@ export const reviewService = {
             rating: input.rating,
             comment: input.comment ?? ''
         });
+        const author = await User.findById(me).select('firstName lastName').lean<PublicPersonRecord>();
+        if (author) {
+            await notify.reviewReceived(targetId, mission, author, input.rating);
+        }
+
         const [view] = await enrich([created.toObject() as ReviewRecord], 'target');
         return view;
     },

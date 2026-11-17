@@ -3,6 +3,7 @@ import { CATEGORY_SLUGS } from '../constants/categories';
 import { QUARTIER_SLUGS } from '../constants/quartiers';
 import { MISSION_STATUSES } from '../constants/statuses';
 import { toJSON } from '../utils/toJSON';
+import { missionEvents } from '../utils/missionEvents';
 
 // Mission publiée par un utilisateur (voir docs/modele-donnees.md)
 const missionSchema = new Schema(
@@ -41,6 +42,17 @@ missionSchema.index({ ownerId: 1, createdAt: -1 }, { name: 'owner_recent' });
 missionSchema.index({ providerId: 1, status: 1 }, { name: 'provider_status' });
 
 missionSchema.plugin(toJSON);
+
+// Nouvelle mission : on prévient les voisins concernés (notification.service écoute cet événement)
+missionSchema.pre('save', function () {
+    this.$locals.wasNew = this.isNew;
+});
+missionSchema.post('save', function (doc) {
+    if (doc.$locals.wasNew) {
+        const { _id, ownerId, title, category, quartier, rewardCents } = doc;
+        missionEvents.emit('created', { _id, ownerId, title, category, quartier, rewardCents });
+    }
+});
 
 export type IMission = InferSchemaType<typeof missionSchema>;
 

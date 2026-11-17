@@ -7,6 +7,7 @@ import { BadRequestError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
 import { PUBLIC_PERSON_FIELDS, toPublicPerson, type PublicPerson, type PublicPersonRecord } from '../utils/publicPerson';
 import { findMyMission, toMissionSummary, type MissionSummary } from './application.service';
+import { notify } from './notification.service';
 
 type MissionRecord = IMission & { _id: Types.ObjectId; createdAt: Date };
 type ReviewRecord = { _id: Types.ObjectId; missionId: Types.ObjectId; rating: number; comment?: string };
@@ -143,6 +144,11 @@ export const dashboardService = {
         ).lean<MissionRecord>();
         if (!completed) {
             throw new BadRequestError('Seule une mission attribuée peut être marquée comme terminée');
+        }
+
+        const owner = await User.findById(completed.ownerId).select('firstName lastName').lean<PublicPersonRecord>();
+        if (completed.providerId && owner) {
+            await notify.missionCompleted(completed.providerId, completed, owner);
         }
         return { ...toMissionSummary(completed), completedAt: completed.completedAt ?? null };
     }

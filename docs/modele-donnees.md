@@ -165,6 +165,22 @@ erDiagram
 
 - Un avis par auteur et par mission (**index unique**). `targetId` n'est jamais envoyé par le client : sinon on pourrait noter n'importe qui.
 
+
+## Notification (`notifications`)
+
+| Champ | Type | Oblig. | Contraintes | Fixé par |
+|---|---|---|---|---|
+| `userId` | ObjectId → User | oui | destinataire | **serveur** |
+| `type` | String | oui | `mission_nearby` · `application_received` · `application_accepted` · `application_rejected` · `mission_completed` · `review_received` | **serveur** |
+| `message` | String | oui | 1 à 300 car., texte prêt à afficher | **serveur** |
+| `link` | String | oui | chemin du front (`/dashboard`, `/missions/:id`…) | **serveur** |
+| `missionId` | ObjectId → Mission | non | mission concernée | **serveur** |
+| `readAt` | Date | non | `null` = non lue | client (`PATCH {read}`) |
+
+- Jamais créée par le client : seuls les services l'envoient (candidature, acceptation, refus, clôture, avis).
+- `mission_nearby` : à la création d'une mission, les membres de la **même ville** que le quartier et qui ont la **compétence** demandée (100 au plus).
+- Supprimée automatiquement après 90 jours (index TTL).
+
 ---
 
 ## Index
@@ -182,6 +198,9 @@ erDiagram
 | `applications` | `{ missionId: 1, status: 1 }` | Candidats d'une mission |
 | `reviews` | `{ missionId: 1, authorId: 1 }` unique | Un avis par mission |
 | `reviews` | `{ targetId: 1 }` | Note moyenne d'un profil |
+| `notifications` | `{ userId: 1, createdAt: -1 }` | Mes notifications |
+| `notifications` | `{ userId: 1, readAt: 1 }` | Compteur de non lues |
+| `notifications` | `{ createdAt: 1 }` TTL 90 j | Purge automatique |
 
 ## Listes de référence
 

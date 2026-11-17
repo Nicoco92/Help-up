@@ -36,6 +36,8 @@
     'villejuif-paul-vaillant-couturier']
   const MISSION_STATUSES = ['open', 'assigned', 'completed', 'cancelled']
   const APPLICATION_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn']
+  const NOTIFICATION_TYPES = ['mission_nearby', 'application_received', 'application_accepted', 'application_rejected',
+    'mission_completed', 'review_received']
 
   const str = (min, max, extra = {}) => ({ bsonType: 'string', minLength: min, maxLength: max, ...extra })
   const num = (min, max) => ({ bsonType: ['int', 'long', 'double'], minimum: min, maximum: max })
@@ -137,6 +139,27 @@
       indexes: [
         { key: { missionId: 1, authorId: 1 }, name: 'one_review_per_mission', unique: true },
         { key: { targetId: 1 }, name: 'target' },
+      ],
+    },
+
+    notifications: {
+      schema: {
+        required: ['userId', 'type', 'message', 'link'],
+        properties: {
+          userId: id,
+          type: { enum: NOTIFICATION_TYPES },
+          message: str(1, 300),
+          link: str(1, 200),
+          missionId: { bsonType: ['objectId', 'null'] },
+          readAt: { bsonType: ['date', 'null'] },
+          createdAt: date,
+          updatedAt: date,
+        },
+      },
+      indexes: [
+        { key: { userId: 1, createdAt: -1 }, name: 'user_recent' },
+        { key: { userId: 1, readAt: 1 }, name: 'user_unread' },
+        { key: { createdAt: 1 }, name: 'expire_after_90_days', expireAfterSeconds: 90 * 24 * 3600 },
       ],
     },
   }
@@ -359,8 +382,9 @@
       const r = database.reviews.deleteMany({ $or: [{ missionId: { $in: missionIds } }, { authorId: { $in: userIds } }, { targetId: { $in: userIds } }] })
       const a = database.applications.deleteMany({ $or: [{ missionId: { $in: missionIds } }, { applicantId: { $in: userIds } }] })
       const m = database.missions.deleteMany({ _id: { $in: missionIds } })
+      const n = database.notifications.deleteMany({ userId: { $in: userIds } })
       const u = database.users.deleteMany({ _id: { $in: userIds } })
-      print(`  Démo précédente supprimée : ${u.deletedCount} comptes, ${m.deletedCount} missions, ${a.deletedCount} candidatures, ${r.deletedCount} avis`)
+      print(`  Démo précédente supprimée : ${u.deletedCount} comptes, ${m.deletedCount} missions, ${a.deletedCount} candidatures, ${r.deletedCount} avis, ${n.deletedCount} notifications`)
     }
 
     // --- Comptes ---
@@ -427,7 +451,23 @@
     database.missions.insertMany(missions)
     database.applications.insertMany(applications)
     database.reviews.insertMany(reviews)
-    print(`  ✓ ${users.length} comptes, ${missions.length} missions, ${applications.length} candidatures, ${reviews.length} avis`)
+
+    // --- Notifications de la démo : ce que l'application aurait envoyé pour le scénario fixe ---
+    const hoursAgo = (h) => new Date(NOW.getTime() - h * 3600 * 1000)
+    const notify = (user, type, message, link, mission, hours, read = false) => ({
+      _id: new ObjectId(), userId: user._id, type, message, link, missionId: mission ? mission._id : null,
+      readAt: read ? hoursAgo(hours - 1) : null, createdAt: hoursAgo(hours), updatedAt: hoursAgo(hours),
+    })
+    const notifications = [
+      notify(alice, 'application_received', `Bob N. a postulé à « ${armoire.title} ».`, '/dashboard', armoire, 3),
+      notify(alice, 'application_received', `Chloé D. a postulé à « ${armoire.title} ».`, '/dashboard', armoire, 2),
+      notify(alice, 'review_received', `Bob N. vous a laissé un avis pour « ${maths.title} ».`, '/profile', maths, 70, true),
+      notify(bob, 'application_rejected', `Votre candidature pour « ${demenagement.title} » n’a pas été retenue.`, '/applications', demenagement, 30, true),
+      notify(bob, 'mission_completed', `« ${maths.title} » est terminée. Pensez à noter Alice.`, '/dashboard', maths, 120, true),
+      notify(chloe, 'application_accepted', `Bonne nouvelle : votre candidature pour « ${demenagement.title} » est acceptée.`, '/dashboard', demenagement, 30),
+    ]
+    database.notifications.insertMany(notifications)
+    print(`  ✓ ${users.length} comptes, ${missions.length} missions, ${applications.length} candidatures, ${reviews.length} avis, ${notifications.length} notifications`)
     print('\nComptes de démo (mot de passe : password123) :')
     print('  alice.martin@helpup.test   publie des missions (1 ouverte avec 3 candidats, 1 attribuée, 1 terminée)')
     print('  bob.nguyen@helpup.test     étudiant (candidatures en attente, refusée, mission terminée)')

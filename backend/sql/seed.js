@@ -29,6 +29,8 @@
     'villejuif-paul-vaillant-couturier']
   const MISSION_STATUSES = ['open', 'assigned', 'completed', 'cancelled']
   const APPLICATION_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn']
+  const NOTIFICATION_TYPES = ['mission_nearby', 'application_received', 'application_accepted', 'application_rejected',
+    'mission_completed', 'review_received']
 
   const str = (min, max, extra = {}) => ({ bsonType: 'string', minLength: min, maxLength: max, ...extra })
   const num = (min, max) => ({ bsonType: ['int', 'long', 'double'], minimum: min, maximum: max })
@@ -130,6 +132,27 @@
       indexes: [
         { key: { missionId: 1, authorId: 1 }, name: 'one_review_per_mission', unique: true },
         { key: { targetId: 1 }, name: 'target' },
+      ],
+    },
+
+    notifications: {
+      schema: {
+        required: ['userId', 'type', 'message', 'link'],
+        properties: {
+          userId: id,
+          type: { enum: NOTIFICATION_TYPES },
+          message: str(1, 300),
+          link: str(1, 200),
+          missionId: { bsonType: ['objectId', 'null'] },
+          readAt: { bsonType: ['date', 'null'] },
+          createdAt: date,
+          updatedAt: date,
+        },
+      },
+      indexes: [
+        { key: { userId: 1, createdAt: -1 }, name: 'user_recent' },
+        { key: { userId: 1, readAt: 1 }, name: 'user_unread' },
+        { key: { createdAt: 1 }, name: 'expire_after_90_days', expireAfterSeconds: 90 * 24 * 3600 },
       ],
     },
   }

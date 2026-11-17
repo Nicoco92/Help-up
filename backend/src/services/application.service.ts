@@ -6,6 +6,7 @@ import { CATEGORIES } from '../constants/categories';
 import { findQuartier } from '../constants/quartiers';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
+import { notify } from './notification.service';
 import type { CreateApplicationInput, UpdateApplicationInput } from '../validators/application.validator';
 
 // Documents lus avec .lean() : objets simples, avec leur _id
@@ -155,6 +156,11 @@ export const applicationService = {
 
         // Deux requêtes simultanées : l'index unique missionId + applicantId renvoie un 409 CONFLICT
         const created = await Application.create({ missionId: mission._id, applicantId, message: input.message });
+
+        const applicant = await User.findById(applicantId).select('firstName lastName').lean<UserRecord>();
+        if (applicant) {
+            await notify.applicationReceived(mission.ownerId, mission, applicant);
+        }
         return { ...toView(created.toObject() as ApplicationRecord), mission: toMissionSummary(mission) };
     },
 
@@ -236,10 +242,12 @@ export const applicationService = {
         }
 
         await Application.updateOne({ _id: application._id }, { $set: { status: 'accepted' } });
-        await Application.updateMany(
-            { missionId: mission._id, _id: { $ne: application._id }, status: 'pending' },
-            { $set: { status: 'rejected' } }
-        );
+        const others = { missionId: mission._id, _id: { $ne: application._id }, status: 'pending' as const };
+        const rejected = await Application.find(others).select('applicantId').lean<ApplicationRecord[]>();
+        await Application.updateMany(others, { $set: { status: 'rejected' } });
+
+        await notify.applicationAccepted(application.applicantId, assigned);
+        await notify.applicationRejected(rejected.map((a) => a.applicantId), assigned);
 
         return { ...toView({ ...application, status: 'accepted' }), mission: toMissionSummary(assigned) };
     },
@@ -253,6 +261,7 @@ export const applicationService = {
         }
 
         await Application.updateOne({ _id: application._id }, { $set: { status: 'rejected' } });
+        await notify.applicationRejected([application.applicantId], mission);
         return { ...toView({ ...application, status: 'rejected' }), mission: toMissionSummary(mission) };
     }
 };
