@@ -8,7 +8,7 @@ import YAML from 'yaml';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
 import missionsRouter from './routes/missions';
-import exploreRouter from './routes/explore';
+import exploreRouter from './routes/explore.routes';
 import applicationsRouter from './routes/applications';
 import { errorHandler, notFound } from './middlewares/errorHandler';
 
