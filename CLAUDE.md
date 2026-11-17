@@ -32,7 +32,7 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 - **Tests** : Jest et Supertest, avec `mongodb-memory-server` comme base isolée.
 - **Documentation** : README.md, `.env.example` sans aucun secret, Swagger/OpenAPI (`swagger-ui-express` et `yaml`).
 
-## État actuel (rien de commité après `041517e first commit` : Romain fait le commit initial lui-même)
+## État actuel (branche `webromain` ; Romain commite et pousse lui-même)
 ```
 full-stack-js/
 ├── compose.yaml              # mongo:7.0 (auth, hôte 127.0.0.1:27017), backend, frontend, mongo-express (profil "tools", auth)
@@ -41,14 +41,19 @@ full-stack-js/
 ├── .gitignore                # node_modules/, builds, tous les .env sauf .env.example, logs, éditeurs
 ├── frontend/                 # modèle Vite react, ESLint ; vite.config.js `envDir: '..'` (lit le .env racine) — jamais de secret préfixé VITE_ (exposé au navigateur)
 └── backend/
-    ├── src/app.ts            # app Express (helmet, cors, json) + GET /api/health ; n'ouvre pas de port ; export default
+    ├── src/app.ts            # helmet, cors, json, GET /api/health, Swagger /api/docs, 5 routeurs /api/{auth,users,missions,explore,applications}, puis notFound + errorHandler ; n'ouvre pas de port
     ├── src/server.ts         # dotenv + mongoose.connect + app.listen(PORT)
     ├── src/constants/        # categories.ts, quartiers.ts (Paris sud + Villejuif, [lng, lat]), statuses.ts : source unique, `as const` + types (CategorySlug, QuartierSlug, MissionStatus…) ; *_SLUGS = tuples pour z.enum
-    ├── src/{routes,controllers,services,models,middlewares,validators,utils,docs}/   # vides
+    ├── src/utils/            # AppError.ts (codes INVALID_INPUT|UNAUTHORIZED|NOT_FOUND|EMAIL_ALREADY_USED|CONFLICT|INTERNAL_ERROR, helpers statiques notFound()…), toJSON.ts (plugin : _id→id, retire __v/passwordHash)
+    ├── src/middlewares/      # errorHandler.ts (AppError, JSON invalide 400, CastError 400, doublon 11000 → 409, sinon 500) + notFound ; validate.ts (validate(schemaZod) sur req.body → 400)
+    ├── src/models/           # Mission.ts, Application.ts (index nommés comme dans sql/seed.js, versionKey false) ; User = Nicolas
+    ├── src/routes/           # 5 routeurs vides (auth/users/missions = Nicolas, explore = Yaël, applications = Romain)
+    ├── src/docs/openapi.yaml # spec OpenAPI écrite à la main (yaml + swagger-ui-express), bearerAuth par défaut ; copiée dans dist/docs au build
+    ├── src/{controllers,services,validators}/   # vides
     ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)
     ├── migration/seed-demo.js # mongosh autonome : structure (copie de sql/seed.js) + démo déterministe, comptes @helpup.test (mdp password123, hash bcrypt en dur) ; RESET=true ne touche que la démo ; pas de JWT
     ├── scripts/mongosh.sh    # npm run db:demo | db:create : lance le script via docker mongo:7.0 sur MONGODB_URI du fichier d'env racine ; s'arrête si une base de même nom/autre casse existe (ex. HelpUP)
-    ├── tests/health.test.ts  # test Supertest de /api/health (Jest + ts-jest)
+    ├── tests/                # health, errors (format d'erreur + validate, sans base), docs (Swagger) — Jest + ts-jest + Supertest
     ├── tsconfig.json         # NodeNext (sortie CommonJS), strict, types node+jest, noEmit (typecheck src+tests)
     ├── tsconfig.build.json   # build src/ → dist/
     └── eslint.config.js      # flat config CJS : typescript-eslint pour *.ts, globales mongosh pour sql/ et migration/

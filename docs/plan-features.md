@@ -24,7 +24,7 @@ Objectif : que chacun avance **sans attendre les autres** dès la fin de la prem
 1. **Contrat d'abord (sprint 0).** Les modèles Mongoose, les routes (section 4) et le format d'erreur sont fixés **avant** de coder les features. Ensuite, on ne les change qu'en prévenant les deux autres.
 2. **Données et jetons de dev.** `npm run seed` crée 3 comptes (A, B, C), 25 missions réparties sur les quartiers, et **affiche un JWT par compte**. Tant que l'écran de connexion n'existe pas, on colle ce jeton dans le navigateur (`localStorage.token`).
 3. **Tranches verticales.** Chacun fait **back + front + tests + Swagger** de sa feature. Personne n'attend « que le back soit fini ».
-4. **Un fichier = un propriétaire.** Routes, contrôleurs, services, validateurs et pages sont séparés par feature. Les fichiers partagés (`app.js`, `openapi.yaml`, `App.jsx`) sont préparés au sprint 0 avec un emplacement pour chaque feature.
+4. **Un fichier = un propriétaire.** Routes, contrôleurs, services, validateurs et pages sont séparés par feature. Les fichiers partagés (`app.ts`, `openapi.yaml`, `App.tsx`) sont préparés au sprint 0 avec un emplacement pour chaque feature.
 5. **Git.** Une branche par tâche (`feat/auth-login`, `feat/explore-api`…), une PR relue par un autre membre, **merge au moins 2 fois par jour** (12 h et 17 h). Chaque matin : `git pull --rebase` sur `main`.
 6. **Points de synchro de 10 min** : à l'arrivée et au retour de la pause déjeuner. Question unique : « qu'est-ce qui risque de bloquer quelqu'un ? »
 
