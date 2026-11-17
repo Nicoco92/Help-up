@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ApiError, exploreApi } from '../services/api'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { StatusBadge } from '../components/StatusBadge'
+import { ApplyPanel } from '../components/ApplyPanel'
 import type { Mission } from '../types/mission'
 
 function formatReward(value: number) {
@@ -139,6 +140,9 @@ export function MissionDetailPage() {
             Vous avez déjà envoyé une candidature pour cette mission.
           </p>
         )}
+
+        {/* Candidatures (Romain) : l'API n'affiche ici que des missions ouvertes d'autres membres */}
+        {!mission.alreadyApplied && mission.status === 'open' && <ApplyPanel missionId={mission.id} />}
 
       </article>
     </div>

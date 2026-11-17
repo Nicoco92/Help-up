@@ -7,6 +7,7 @@ import type {
   UserRole,
 } from '../types/auth'
 import type { Mission, MissionListResponse } from '../types/mission'
+import type { Application } from '../types/application'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -112,4 +113,27 @@ export const exploreApi = {
     request<MissionListResponse>(`/explore/missions${query ? `?${query}` : ''}`, { signal }),
   getById: (id: string, signal?: AbortSignal) =>
     request<Mission>(`/explore/missions/${encodeURIComponent(id)}`, { signal }),
+}
+
+// Candidatures : les miennes (/applications) et celles reçues sur mes missions (/missions/:id/applications).
+export const applicationsApi = {
+  listMine: () => request<{ items: Application[] }>('/applications'),
+  create: (payload: { missionId: string; message: string }) =>
+    request<Application>('/applications', json('POST', payload)),
+  update: (id: string, message: string) =>
+    request<Application>(`/applications/${encodeURIComponent(id)}`, json('PATCH', { message })),
+  remove: (id: string) =>
+    request<void>(`/applications/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  listForMission: (missionId: string) =>
+    request<{ items: Application[] }>(`/missions/${encodeURIComponent(missionId)}/applications`),
+  accept: (missionId: string, applicationId: string) =>
+    request<Application>(
+      `/missions/${encodeURIComponent(missionId)}/applications/${encodeURIComponent(applicationId)}/accept`,
+      { method: 'POST' },
+    ),
+  reject: (missionId: string, applicationId: string) =>
+    request<Application>(
+      `/missions/${encodeURIComponent(missionId)}/applications/${encodeURIComponent(applicationId)}/reject`,
+      { method: 'POST' },
+    ),
 }
