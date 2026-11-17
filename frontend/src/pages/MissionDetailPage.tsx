@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, exploreApi } from '../services/api'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { StatusBadge } from '../components/StatusBadge'
@@ -10,6 +10,17 @@ import type { Mission } from '../types/mission'
 function formatReward(value: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(
     value / 100,
+  )
+}
+
+function BackButton() {
+  const navigate = useNavigate()
+
+  return (
+    <button className="back-link" type="button" onClick={() => navigate(-1)}>
+      <ArrowLeft size={18} aria-hidden="true" />
+      Retour
+    </button>
   )
 }
 
@@ -68,10 +79,7 @@ export function MissionDetailPage() {
   if (error || !mission) {
     return (
       <div className="detail-page">
-        <Link className="back-link" to="/missions">
-          <ArrowLeft size={18} aria-hidden="true" />
-          Retour aux missions
-        </Link>
+        <BackButton />
         <section className="state-card detail-state" role="alert">
           <span className="state-icon">!</span>
           <h1>Mission indisponible</h1>
@@ -86,10 +94,7 @@ export function MissionDetailPage() {
 
   return (
     <div className="detail-page">
-      <Link className="back-link" to="/missions">
-        <ArrowLeft size={18} aria-hidden="true" />
-        Retour aux missions
-      </Link>
+      <BackButton />
       <article className="detail-card">
         <div className="detail-header">
           <div>
