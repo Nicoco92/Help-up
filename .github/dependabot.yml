@@ -1,0 +1,19 @@
+# Mises à jour de sécurité des dépendances (docs/securite.md, OWASP A06).
+# Dependabot ouvre une PR par semaine et par dossier ; on la relit et on la merge si les tests passent.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+    # Laisser une semaine aux nouvelles versions avant de les proposer (attaques de la chaîne d'approvisionnement)
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5

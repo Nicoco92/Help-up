@@ -9,6 +9,9 @@ import type { UserRole } from '../../constants/roles'
 
 type PrivateUser = ReturnType<IUserDocument['toJSON']>
 
+// L'annuaire ne renvoie jamais toute la base d'un coup (déni de service, aspiration des profils).
+const MAX_LISTED_USERS = 200
+
 // Ce qu'un membre voit d'un autre membre : ni email, ni téléphone, nom de famille réduit à l'initiale.
 export interface PublicUserProfile {
   id: string
@@ -127,12 +130,14 @@ export class UserService {
 
   async listUsers(requestingUser: IUserDocument): Promise<Array<PrivateUser | PublicUserProfile>> {
     if (requestingUser.role === 'admin') {
-      const users = await User.find().sort({ createdAt: -1 })
+      const users = await User.find().sort({ createdAt: -1 }).limit(MAX_LISTED_USERS)
       return users.map((u) => u.toJSON())
     }
     // « Tout sauf admin » plutôt que « role = client » : les comptes créés par les scripts mongosh
     // (seed-demo.js) n'ont pas de champ role et doivent quand même apparaître.
-    const users = await User.find({ role: { $ne: 'admin' } }).sort({ createdAt: -1 })
+    const users = await User.find({ role: { $ne: 'admin' } })
+      .sort({ createdAt: -1 })
+      .limit(MAX_LISTED_USERS)
     return users.map(toPublicProfile)
   }
 

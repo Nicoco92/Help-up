@@ -27,6 +27,8 @@ register:
           application/json:
             schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
             example: { error: { code: EMAIL_ALREADY_USED, message: Cet email est déjà utilisé } }
+      '413': { $ref: '../openapi.yaml#/components/responses/PayloadTooLarge' }
+      '429': { $ref: '../openapi.yaml#/components/responses/TooManyRequests' }
 
 login:
   post:
@@ -49,3 +51,5 @@ login:
             schema: { $ref: '../openapi.yaml#/components/schemas/AuthResponse' }
       '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
       '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '413': { $ref: '../openapi.yaml#/components/responses/PayloadTooLarge' }
+      '429': { $ref: '../openapi.yaml#/components/responses/TooManyRequests' }

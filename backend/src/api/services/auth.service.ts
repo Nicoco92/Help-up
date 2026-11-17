@@ -1,5 +1,5 @@
 import { User, type IUserDocument } from '../../models/user.model'
-import { hashPassword, comparePassword } from '../utils/password'
+import { hashPassword, comparePassword, needsRehash } from '../utils/password'
 import { signToken } from '../utils/jwt'
 import { ConflictError, UnauthorizedError } from '../utils/errors'
 import type { RegisterInput, LoginInput } from '../validators/auth.validator'
@@ -8,10 +8,6 @@ export interface AuthResult {
   user: ReturnType<IUserDocument['toJSON']>
   token: string
 }
-
-// Hash bcrypt d'un mot de passe quelconque : comparé quand l'email n'existe pas, pour que
-// la réponse prenne le même temps dans les deux cas (pas d'énumération des comptes).
-const DUMMY_HASH = '$2b$10$rJXZBwl3.UzVc43cXTrXc.0jij66RcOj4omhj73gOjAy1Ofw9fSJe'
 
 function toAuthResult(user: IUserDocument): AuthResult {
   return { user: user.toJSON(), token: signToken(user.id) }
@@ -41,10 +37,17 @@ export class AuthService {
 
   async login(data: LoginInput): Promise<AuthResult> {
     const user = await User.findOne({ email: data.email }).select('+passwordHash')
-    const isPasswordValid = await comparePassword(data.password, user?.passwordHash ?? DUMMY_HASH)
+    // Compte absent : comparaison avec un hash factice, même durée de réponse (pas d'énumération).
+    const isPasswordValid = await comparePassword(data.password, user?.passwordHash)
 
     if (!user || !isPasswordValid) {
       throw new UnauthorizedError('Email ou mot de passe incorrect', 'UNAUTHORIZED')
+    }
+
+    // Hash créé avec un coût bcrypt plus faible : on le refait maintenant qu'on connaît le mot de passe.
+    if (needsRehash(user.passwordHash)) {
+      user.passwordHash = await hashPassword(data.password)
+      await user.save()
     }
 
     return toAuthResult(user)

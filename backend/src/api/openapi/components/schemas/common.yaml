@@ -9,7 +9,7 @@ Error:
       properties:
         code:
           type: string
-          enum: [INVALID_INPUT, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, EMAIL_ALREADY_USED, CONFLICT, INTERNAL_ERROR]
+          enum: [INVALID_INPUT, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, EMAIL_ALREADY_USED, CONFLICT, PAYLOAD_TOO_LARGE, TOO_MANY_REQUESTS, INTERNAL_ERROR]
         message: { type: string, description: Human-readable message (in French) }
 
 ObjectId:

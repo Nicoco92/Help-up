@@ -14,7 +14,12 @@ export function Avatar({ firstName, lastName, avatarUrl, size = 40 }: AvatarProp
       style={{ width: size, height: size, fontSize: size * 0.38 }}
       aria-hidden="true"
     >
-      {avatarUrl ? <img src={avatarUrl} alt="" /> : initials({ firstName, lastName })}
+      {avatarUrl ? (
+        // Image hébergée ailleurs : on n'envoie pas l'adresse de la page au site de l'image
+        <img src={avatarUrl} alt="" referrerPolicy="no-referrer" loading="lazy" decoding="async" />
+      ) : (
+        initials({ firstName, lastName })
+      )}
     </span>
   )
 }

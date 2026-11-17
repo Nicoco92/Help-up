@@ -10,10 +10,15 @@ export const emailField = z
   .max(254, 'L’email ne doit pas dépasser 254 caractères')
 
 // bcrypt ignore tout ce qui dépasse 72 octets : on refuse plutôt que de tronquer en silence.
+// 72 octets et pas 72 caractères : « é » ou un emoji prennent 2 à 4 octets en UTF-8.
 export const passwordField = z
   .string()
   .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
   .max(72, 'Le mot de passe ne doit pas dépasser 72 caractères')
+  .refine(
+    (value) => new TextEncoder().encode(value).length <= 72,
+    'Le mot de passe est trop long (72 octets maximum, les accents comptent double)',
+  )
 
 export const firstNameField = z
   .string()
