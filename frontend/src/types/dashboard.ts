@@ -17,6 +17,8 @@ export interface DashboardMission extends MissionSummary {
     totalApplications: number;
     // Prestataire retenu (mes missions) ou client (missions obtenues)
     counterpart: PublicPerson | null;
+    // Missions terminées : mon avis sur l'autre participant (null = pas encore noté)
+    myReview: { id: string; rating: number; comment: string } | null;
 }
 
 export interface Dashboard {

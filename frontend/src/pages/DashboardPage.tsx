@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, CheckCircle2, ChevronDown, ClipboardList, Compass, History, MapPin, Users } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronDown, ClipboardList, Compass, History, MapPin, Pencil, Star, Users } from 'lucide-react';
 import { dashboardApi } from '../services/api';
 import type { Dashboard, DashboardMission } from '../types/dashboard';
 import { useAuth } from '../hooks/useAuth';
@@ -8,9 +8,12 @@ import { Alert } from '../components/Alert';
 import { EmptyState } from '../components/States';
 import { StatusBadge } from '../components/StatusBadge';
 import { CandidatesPanel } from '../components/CandidatesPanel';
+import { ReviewForm } from '../components/ReviewForm';
+import { RatingStars } from '../components/StarRating';
 import { formatDay, formatReward } from '../utils/missionFormat';
 import '../styles/applications.css';
 import '../styles/dashboard.css';
+import '../styles/reviews.css';
 
 function MissionFacts({ mission }: { mission: DashboardMission }) {
     return (
@@ -121,21 +124,56 @@ function ObtainedCard({ mission }: { mission: DashboardMission }) {
     );
 }
 
-function HistoryRow({ mission }: { mission: DashboardMission }) {
+// Une mission terminée : avec qui, quand, combien, et mon avis sur l'autre participant
+function HistoryRow({ mission, onChange }: { mission: DashboardMission; onChange: () => void }) {
+    const [reviewing, setReviewing] = useState(false);
     const other = mission.counterpart ? `${mission.counterpart.firstName} ${mission.counterpart.lastName}` : 'un membre';
     return (
         <li className="history-row">
-            <div>
-                <strong>{mission.title}</strong>
-                <span>
-                    {mission.role === 'owner' ? `Publiée · réalisée par ${other}` : `Réalisée pour ${other}`}
-                    {mission.completedAt && ` · terminée le ${new Date(mission.completedAt).toLocaleDateString('fr-FR')}`}
-                </span>
+            <div className="history-row__main">
+                <div>
+                    <strong>{mission.title}</strong>
+                    <span>
+                        {mission.role === 'owner' ? `Publiée · réalisée par ${other}` : `Réalisée pour ${other}`}
+                        {mission.completedAt && ` · terminée le ${new Date(mission.completedAt).toLocaleDateString('fr-FR')}`}
+                    </span>
+                    {mission.counterpart && !reviewing && (
+                        <div className="history-review">
+                            {mission.myReview ? (
+                                <>
+                                    <span>Votre avis :</span>
+                                    <RatingStars value={mission.myReview.rating} />
+                                    <button type="button" className="btn btn--ghost btn--sm" onClick={() => setReviewing(true)}>
+                                        <Pencil size={16} aria-hidden="true" />
+                                        Modifier<span className="visually-hidden"> l’avis sur {mission.title}</span>
+                                    </button>
+                                </>
+                            ) : (
+                                <button type="button" className="btn btn--secondary btn--sm" onClick={() => setReviewing(true)}>
+                                    <Star size={16} aria-hidden="true" />
+                                    Noter {mission.counterpart.firstName}
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <strong className={mission.role === 'provider' ? 'history-row__earned' : ''}>
+                    {mission.role === 'provider' ? '+ ' : ''}
+                    {formatReward(mission.rewardCents)}
+                </strong>
             </div>
-            <strong className={mission.role === 'provider' ? 'history-row__earned' : ''}>
-                {mission.role === 'provider' ? '+ ' : ''}
-                {formatReward(mission.rewardCents)}
-            </strong>
+            {reviewing && mission.counterpart && (
+                <ReviewForm
+                    missionId={mission.id}
+                    targetName={mission.counterpart.firstName}
+                    existing={mission.myReview}
+                    onCancel={() => setReviewing(false)}
+                    onSaved={() => {
+                        setReviewing(false);
+                        onChange();
+                    }}
+                />
+            )}
         </li>
     );
 }
@@ -245,7 +283,7 @@ export function DashboardPage() {
                             ) : (
                                 <ul className="card history-list">
                                     {dashboard.history.map((m) => (
-                                        <HistoryRow key={m.id} mission={m} />
+                                        <HistoryRow key={m.id} mission={m} onChange={load} />
                                     ))}
                                 </ul>
                             )}
