@@ -3,7 +3,8 @@ import type { Filter, Sort } from 'mongodb'
 import { CATEGORIES } from '../constants/categories'
 import { findQuartier } from '../constants/quartiers'
 import type { ExploreQuery } from '../validators/explore.validator'
-import { ExploreError } from '../utils/ExploreError'
+import AppError from '../utils/AppError'
+import { toObjectId } from '../utils/objectId'
 
 type MissionRecord = {
   _id: Types.ObjectId
@@ -90,13 +91,6 @@ function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-function objectId(id: string): Types.ObjectId {
-  if (!/^[a-f\d]{24}$/i.test(id)) {
-    throw new ExploreError(400, 'INVALID_INPUT', 'Identifiant de mission invalide.')
-  }
-  return new Types.ObjectId(id)
-}
-
 async function findOwners(missions: MissionRecord[]) {
   const ownerIds = [...new Map(missions.map((mission) => [mission.ownerId.toHexString(), mission.ownerId])).values()]
   if (ownerIds.length === 0) {
@@ -112,7 +106,7 @@ async function findOwners(missions: MissionRecord[]) {
 }
 
 export async function searchOpenMissions(userId: string, query: ExploreQuery): Promise<PublicMission[]> {
-  const userObjectId = objectId(userId)
+  const userObjectId = toObjectId(userId)
   const reward: { $gte?: number; $lte?: number } = {}
   if (query.minReward !== undefined) reward.$gte = query.minReward
   if (query.maxReward !== undefined) reward.$lte = query.maxReward
@@ -144,8 +138,8 @@ export async function searchOpenMissions(userId: string, query: ExploreQuery): P
 }
 
 export async function getOpenMission(userId: string, missionId: string): Promise<PublicMission> {
-  const userObjectId = objectId(userId)
-  const missionObjectId = objectId(missionId)
+  const userObjectId = toObjectId(userId)
+  const missionObjectId = toObjectId(missionId, 'Identifiant de mission invalide.')
   const mission = await mongoose.connection.collection<MissionRecord>('missions').findOne({
     _id: missionObjectId,
     status: 'open',
@@ -153,7 +147,7 @@ export async function getOpenMission(userId: string, missionId: string): Promise
   })
 
   if (!mission) {
-    throw new ExploreError(404, 'NOT_FOUND', 'Mission introuvable.')
+    throw AppError.notFound('Mission introuvable.')
   }
 
   const [owner, application] = await Promise.all([

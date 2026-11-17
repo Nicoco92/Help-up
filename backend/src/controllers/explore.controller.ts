@@ -1,11 +1,11 @@
 import type { RequestHandler } from 'express'
 import { getOpenMission, searchOpenMissions } from '../services/explore.service'
-import { ExploreError } from '../utils/ExploreError'
+import AppError from '../utils/AppError'
 import { parseExploreQuery } from '../validators/explore.validator'
 
 function authenticatedUserId(value: unknown): string {
   if (typeof value !== 'string') {
-    throw new ExploreError(401, 'UNAUTHORIZED', 'Authentification requise.')
+    throw AppError.unauthorized('Authentification requise.')
   }
   return value
 }

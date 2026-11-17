@@ -44,10 +44,10 @@ full-stack-js/
     ├── src/app.ts            # helmet, cors, json, GET /api/health, Swagger /api/docs, 5 routeurs /api/{auth,users,missions,explore,applications}, puis notFound + errorHandler ; n'ouvre pas de port
     ├── src/server.ts         # dotenv + mongoose.connect + app.listen(PORT)
     ├── src/constants/        # categories.ts, quartiers.ts (Paris sud + Villejuif, [lng, lat]), statuses.ts : source unique, `as const` + types (CategorySlug, QuartierSlug, MissionStatus…) ; *_SLUGS = tuples pour z.enum
-    ├── src/utils/            # AppError.ts (codes INVALID_INPUT|UNAUTHORIZED|NOT_FOUND|EMAIL_ALREADY_USED|CONFLICT|INTERNAL_ERROR, helpers statiques notFound()…), toJSON.ts (plugin : _id→id, retire __v/passwordHash)
-    ├── src/middlewares/      # errorHandler.ts (AppError, JSON invalide 400, CastError 400, doublon 11000 → 409, sinon 500) + notFound ; validate.ts (validate(schemaZod) sur req.body → 400)
+    ├── src/utils/            # AppError.ts (codes INVALID_INPUT|UNAUTHORIZED|NOT_FOUND|EMAIL_ALREADY_USED|CONFLICT|INTERNAL_ERROR, helpers statiques notFound()…), toJSON.ts (plugin : _id→id, retire __v/passwordHash), objectId.ts (isObjectId, toObjectId → 400)
+    ├── src/middlewares/      # errorHandler.ts (headersSent, AppError, JSON invalide 400, CastError 400, doublon 11000 → 409, sinon 500) + notFound ; validate.ts (validate(schema) sur req.body, parse(schema, data) pour req.query) ; auth.ts (requireAuth : Bearer JWT {sub} → res.locals.userId, sinon 401)
     ├── src/models/           # Mission.ts, Application.ts (index nommés comme dans sql/seed.js, versionKey false) ; User = Nicolas
-    ├── src/routes/           # 5 routeurs vides (auth/users/missions = Nicolas, explore = Yaël, applications = Romain)
+    ├── src/routes/           # auth/users/missions (Nicolas, vides), applications (Romain, vide), explore.routes.ts (Yaël, fait : /api/explore/missions[/:id] + carte) ; explore utilise AppError/errorHandler/requireAuth/parse communs
     ├── src/docs/openapi.yaml # spec OpenAPI écrite à la main (yaml + swagger-ui-express), bearerAuth par défaut ; copiée dans dist/docs au build
     ├── src/{controllers,services,validators}/   # vides
     ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)

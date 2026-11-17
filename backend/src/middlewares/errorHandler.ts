@@ -2,8 +2,12 @@ import type { ErrorRequestHandler, RequestHandler } from 'express';
 import mongoose from 'mongoose';
 import AppError from '../utils/AppError';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+
+    // Réponse déjà partiellement envoyée : on laisse Express couper la connexion
+    if (res.headersSent) {
+        return next(err);
+    }
 
     // Codes erreurs personnalisés de l'application
     if (err instanceof AppError) {
