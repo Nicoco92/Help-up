@@ -1,11 +1,11 @@
 import type { Types } from 'mongoose';
-import { Notification, type INotification } from '../models/notification.model';
-import { User } from '../models/user.model';
-import { findQuartier } from '../constants/quartiers';
-import type { NotificationType } from '../constants/notifications';
+import { Notification, type INotification } from '../../models/notification.model';
+import { User } from '../../models/user.model';
+import { findQuartier } from '../../constants/quartiers';
+import type { NotificationType } from '../../constants/notifications';
 import { NotFoundError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
-import { missionEvents, type CreatedMission } from '../utils/missionEvents';
+import { missionEvents, type CreatedMission } from '../../models/events/missionEvents';
 
 type NotificationRecord = INotification & { _id: Types.ObjectId; createdAt: Date; updatedAt: Date };
 

@@ -1,0 +1,93 @@
+# Mission schemas (backend/src/models/mission.model.ts, backend/src/api/validators/mission.validator.ts,
+# docs/modele-donnees.md)
+
+Mission:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    ownerId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      readOnly: true
+      description: Taken from the JWT
+    providerId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      nullable: true
+      readOnly: true
+      description: Set when an application is accepted
+    title: { type: string, minLength: 5, maxLength: 80 }
+    description: { type: string, minLength: 10, maxLength: 1000 }
+    rewardCents: { type: integer, minimum: 500, maximum: 50000, description: Amount in cents (4500 = €45) }
+    estimatedMinutes: { type: integer, minimum: 15, maximum: 480 }
+    category: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    scheduledAt: { type: string, format: date-time, description: Requested date of the mission }
+    quartier: { $ref: '../../openapi.yaml#/components/schemas/QuartierSlug' }
+    location:
+      type: object
+      readOnly: true
+      description: Computed from `quartier` (backend/src/constants/quartiers.ts)
+      properties:
+        type: { type: string, enum: [Point] }
+        coordinates: { type: array, items: { type: number }, minItems: 2, maxItems: 2, example: [2.364, 48.7875] }
+    status:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/MissionStatus' }]
+      readOnly: true
+      description: '`open` on creation; only the applications flow changes it'
+    urgent: { type: boolean, default: false }
+    hidden:
+      type: boolean
+      default: false
+      description: Hidden by its owner. Hidden missions are left out of the catalogue (`/api/explore/missions`)
+    completedAt: { type: string, format: date-time, nullable: true, readOnly: true }
+    createdAt: { type: string, format: date-time, readOnly: true }
+    updatedAt: { type: string, format: date-time, readOnly: true }
+
+# POST body. ownerId, providerId, status, location, id… → 400.
+MissionCreate:
+  type: object
+  additionalProperties: false
+  required: [title, description, rewardCents, estimatedMinutes, category, scheduledAt, quartier]
+  properties:
+    title: { type: string, minLength: 5, maxLength: 80 }
+    description: { type: string, minLength: 10, maxLength: 1000 }
+    rewardCents: { type: integer, minimum: 500, maximum: 50000 }
+    estimatedMinutes: { type: integer, minimum: 15, maximum: 480 }
+    category: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    scheduledAt: { type: string, format: date-time, description: ISO 8601 with time zone, must be in the future }
+    quartier: { $ref: '../../openapi.yaml#/components/schemas/QuartierSlug' }
+    urgent: { type: boolean, default: false }
+  example:
+    title: Tondre la pelouse
+    description: Jardin de 200 m², tondeuse fournie. Ramassage de l'herbe compris.
+    rewardCents: 3000
+    estimatedMinutes: 90
+    category: jardinage
+    scheduledAt: '2026-12-05T10:00:00.000Z'
+    quartier: villejuif-centre
+    urgent: false
+
+# PATCH body: same fields as creation, all optional, at least one.
+MissionUpdate:
+  type: object
+  additionalProperties: false
+  minProperties: 1
+  properties:
+    title: { type: string, minLength: 5, maxLength: 80 }
+    description: { type: string, minLength: 10, maxLength: 1000 }
+    rewardCents: { type: integer, minimum: 500, maximum: 50000 }
+    estimatedMinutes: { type: integer, minimum: 15, maximum: 480 }
+    category: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    scheduledAt: { type: string, format: date-time, description: ISO 8601 with time zone, must be in the future }
+    quartier: { $ref: '../../openapi.yaml#/components/schemas/QuartierSlug' }
+    urgent: { type: boolean }
+    hidden: { type: boolean, description: '`true` hides the mission from the catalogue, `false` shows it again' }
+  example:
+    rewardCents: 3500
+    urgent: true
+
+MissionList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/Mission' }

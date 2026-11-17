@@ -1,9 +1,9 @@
 import type { Types } from 'mongoose';
-import { Mission, type IMission } from '../models/mission.model';
-import { Application, type IApplication } from '../models/application.model';
-import { User } from '../models/user.model';
-import { CATEGORIES } from '../constants/categories';
-import { findQuartier } from '../constants/quartiers';
+import { Mission, type IMission } from '../../models/mission.model';
+import { Application, type IApplication } from '../../models/application.model';
+import { User } from '../../models/user.model';
+import { CATEGORIES } from '../../constants/categories';
+import { findQuartier } from '../../constants/quartiers';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
 import { notify } from './notification.service';
@@ -141,7 +141,8 @@ export const applicationService = {
     async create(userId: string, input: CreateApplicationInput): Promise<ApplicationView> {
         const applicantId = toObjectId(userId);
         const mission = await Mission.findById(toObjectId(input.missionId)).lean<MissionRecord>();
-        if (!mission) {
+        // Mission masquée par son propriétaire : absente du catalogue, donc traitée comme absente
+        if (!mission || mission.hidden) {
             throw new NotFoundError('Mission introuvable');
         }
         if (mission.ownerId.equals(applicantId)) {

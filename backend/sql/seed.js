@@ -83,6 +83,7 @@
           },
           status: { enum: MISSION_STATUSES },
           urgent: { bsonType: 'bool' },
+          hidden: { bsonType: 'bool' },
           completedAt: { bsonType: ['date', 'null'] },
           createdAt: date,
           updatedAt: date,

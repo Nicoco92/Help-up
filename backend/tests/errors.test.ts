@@ -2,10 +2,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { z } from 'zod';
-import app from '../src/app';
-import { NotFoundError } from '../src/utils/errors';
-import { validate } from '../src/middlewares/validate';
-import { errorHandler, notFoundHandler } from '../src/middlewares/error.middleware';
+import app from '../src/api/app';
+import { NotFoundError } from '../src/api/utils/errors';
+import { validate } from '../src/api/middlewares/validate';
+import { errorHandler, notFoundHandler } from '../src/api/middlewares/error.middleware';
 
 // Mini application de test : une route par cas d'erreur, sans base de données
 const testApp = express();

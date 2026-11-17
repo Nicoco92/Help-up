@@ -1,0 +1,16 @@
+health:
+  get:
+    tags: [Health]
+    summary: Checks that the API is up
+    operationId: getHealth
+    x-status: implemented
+    security: []
+    responses:
+      '200':
+        description: API available
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, example: ok }

@@ -1,5 +1,5 @@
 import { Schema, model, type InferSchemaType } from 'mongoose';
-import { toJSON } from '../utils/toJSON';
+import { toJSON } from './plugins/toJSON';
 
 // Avis laissé après une mission terminée, par le client ou par le prestataire (voir docs/modele-donnees.md)
 const reviewSchema = new Schema(

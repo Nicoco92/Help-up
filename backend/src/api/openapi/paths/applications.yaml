@@ -1,0 +1,162 @@
+# /api/applications and /api/missions/{id}/applications: Romain
+# (backend/src/api/routes/applications.routes.ts, backend/src/api/routes/missionApplications.routes.ts)
+# Applicant-scoped: only my applications (applicantId = JWT). Another member's application returns 404.
+
+applications:
+  get:
+    tags: [Applications]
+    summary: Lists my applications
+    description: Sorted from newest to oldest, each with a summary of its mission.
+    operationId: listMyApplications
+    x-status: implemented
+    responses:
+      '200':
+        description: My applications (`{"items":[]}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMissionList' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+  post:
+    tags: [Applications]
+    summary: Applies to a mission
+    description: |
+      Rules: the mission exists and is visible in the catalogue (`404` otherwise, a hidden mission included),
+      is `open` (`400`), is not mine (`400`), one application per mission (`409 CONFLICT`).
+      `applicantId` and `status` are set by the server: sending them → `400`.
+      The mission owner receives an `application_received` notification.
+    operationId: createApplication
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationInput' }
+    responses:
+      '201':
+        description: 'Application created (`status: pending`)'
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+
+application-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Applications]
+    summary: Reads one of my applications
+    operationId: getMyApplication
+    x-status: implemented
+    responses:
+      '200':
+        description: The application
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  patch:
+    tags: [Applications]
+    summary: Updates the message of one of my applications
+    description: Only while the application is `pending` (`400` otherwise).
+    operationId: updateMyApplication
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationUpdate' }
+    responses:
+      '200':
+        description: Application updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  delete:
+    tags: [Applications]
+    summary: Withdraws one of my applications
+    description: Only while the application is `pending` (`400` otherwise). I can apply again afterwards.
+    operationId: withdrawMyApplication
+    x-status: implemented
+    responses:
+      '204': { description: Application withdrawn }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+mission-applications:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Applications]
+    summary: Lists the applicants of one of my missions
+    description: |
+      Sorted from oldest to newest, with the public profile of each applicant (no email, no phone).
+      Another member's mission returns `404`.
+    operationId: listMissionApplications
+    x-status: implemented
+    responses:
+      '200':
+        description: The applications (`{"items":[]}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithApplicantList' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+mission-application-accept:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+    - $ref: '../openapi.yaml#/components/parameters/ApplicationIdPath'
+
+  post:
+    tags: [Applications]
+    summary: Accepts an applicant
+    description: |
+      The mission becomes `assigned` with `providerId` = the applicant; the other pending applications
+      become `rejected`. A mission that is no longer `open` or an application already handled → `400`.
+    operationId: acceptApplication
+    x-status: implemented
+    responses:
+      '200':
+        description: Application accepted, with the updated mission
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+mission-application-reject:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+    - $ref: '../openapi.yaml#/components/parameters/ApplicationIdPath'
+
+  post:
+    tags: [Applications]
+    summary: Rejects an applicant
+    description: The mission stays `open`. An application already handled → `400`.
+    operationId: rejectApplication
+    x-status: implemented
+    responses:
+      '200':
+        description: Application rejected
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ApplicationWithMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }

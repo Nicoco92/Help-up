@@ -1,0 +1,37 @@
+# Notification schemas (backend/src/models/notification.model.ts, backend/src/api/validators/notification.validator.ts)
+
+# backend/src/constants/notifications.ts
+NotificationType:
+  type: string
+  enum: [mission_nearby, application_received, application_accepted, application_rejected, mission_completed, review_received]
+
+Notification:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    type: { $ref: '../../openapi.yaml#/components/schemas/NotificationType' }
+    message: { type: string, example: Bob N. a postulé à « Monter une armoire ». }
+    link: { type: string, description: Frontend page to open, example: /dashboard }
+    missionId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      nullable: true
+    read: { type: boolean }
+    readAt: { type: string, format: date-time, nullable: true }
+    createdAt: { type: string, format: date-time }
+
+# PATCH body: only the read / unread state can change.
+NotificationUpdate:
+  type: object
+  required: [read]
+  additionalProperties: false
+  properties:
+    read: { type: boolean }
+
+NotificationList:
+  type: object
+  required: [items, unreadCount]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/Notification' }
+    unreadCount: { type: integer, example: 2 }

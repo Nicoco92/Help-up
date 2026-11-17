@@ -15,6 +15,8 @@ import { MissionDetailPage } from './pages/MissionDetailPage'
 import { MyApplicationsPage } from './pages/MyApplicationsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { NotificationsPage } from './pages/NotificationsPage'
+import { MyMissionsPage } from './pages/MyMissionsPage'
+import { MissionFormPage } from './pages/MissionFormPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export default function App() {
@@ -31,7 +33,10 @@ export default function App() {
           {/* Pages réservées aux membres connectés (l'API exige aussi le JWT) */}
           <Route element={<RequireAuth />}>
             <Route path="missions" element={<ExplorePage />} />
+            <Route path="missions/mine" element={<MyMissionsPage />} />
+            <Route path="missions/new" element={<MissionFormPage />} />
             <Route path="missions/:id" element={<MissionDetailPage />} />
+            <Route path="missions/:id/edit" element={<MissionFormPage />} />
             <Route path="applications" element={<MyApplicationsPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="notifications" element={<NotificationsPage />} />

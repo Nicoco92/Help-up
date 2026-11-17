@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CATEGORY_SLUGS } from '../constants/categories'
+import { CATEGORY_SLUGS } from '../../constants/categories'
 import { BadRequestError } from '../utils/errors'
 
 const rewardAmount = z

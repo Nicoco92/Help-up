@@ -1,7 +1,7 @@
 import mongoose, { Types } from 'mongoose'
 import type { Filter, Sort } from 'mongodb'
-import { CATEGORIES } from '../constants/categories'
-import { findQuartier } from '../constants/quartiers'
+import { CATEGORIES } from '../../constants/categories'
+import { findQuartier } from '../../constants/quartiers'
 import type { ExploreQuery } from '../validators/explore.validator'
 import { BadRequestError, NotFoundError } from '../utils/errors'
 
@@ -119,6 +119,7 @@ export async function searchOpenMissions(userId: string, query: ExploreQuery): P
 
   const filter: Filter<MissionRecord> = {
     status: 'open',
+    hidden: { $ne: true }, // masquée par son propriétaire ($ne : les anciennes missions n'ont pas le champ)
     ownerId: { $ne: userObjectId },
     ...(query.q
       ? {
@@ -149,6 +150,7 @@ export async function getOpenMission(userId: string, missionId: string): Promise
   const mission = await mongoose.connection.collection<MissionRecord>('missions').findOne({
     _id: missionObjectId,
     status: 'open',
+    hidden: { $ne: true },
     ownerId: { $ne: userObjectId },
   })
 

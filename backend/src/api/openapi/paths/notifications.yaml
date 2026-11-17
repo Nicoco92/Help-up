@@ -1,0 +1,109 @@
+# /api/notifications: Romain (backend/src/api/routes/notifications.routes.ts)
+# Created by the server only (notification.service): a new mission nearby (same city + skill),
+# an application received, accepted or rejected, a completed mission, a review received.
+# Deleted automatically after 90 days. Recipient-scoped: another member's notification returns 404.
+
+notifications:
+  get:
+    tags: [Notifications]
+    summary: Lists my 50 latest notifications and the unread count
+    operationId: listMyNotifications
+    x-status: implemented
+    parameters:
+      - name: unread
+        in: query
+        required: false
+        description: '`true` = unread only (other value → `400`)'
+        schema: { type: string, enum: ['true', 'false'] }
+    responses:
+      '200':
+        description: My notifications (`{"items":[],"unreadCount":0}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/NotificationList' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+unread-count:
+  get:
+    tags: [Notifications]
+    summary: Counts my unread notifications (bell badge)
+    operationId: getUnreadNotificationCount
+    x-status: implemented
+    responses:
+      '200':
+        description: The counter
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count: { type: integer, example: 2 }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+read-all:
+  post:
+    tags: [Notifications]
+    summary: Marks all my notifications as read
+    operationId: markAllNotificationsRead
+    x-status: implemented
+    responses:
+      '200':
+        description: Number of notifications marked as read
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updated: { type: integer, example: 2 }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+notification-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Notifications]
+    summary: Reads one of my notifications
+    operationId: getMyNotification
+    x-status: implemented
+    responses:
+      '200':
+        description: The notification
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Notification' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  patch:
+    tags: [Notifications]
+    summary: Marks one of my notifications as read or unread
+    operationId: updateMyNotification
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/NotificationUpdate' }
+    responses:
+      '200':
+        description: Notification updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Notification' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  delete:
+    tags: [Notifications]
+    summary: Deletes one of my notifications
+    operationId: deleteMyNotification
+    x-status: implemented
+    responses:
+      '204': { description: Notification deleted }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }

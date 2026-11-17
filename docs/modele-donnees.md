@@ -122,6 +122,7 @@ erDiagram
 | `location` | GeoJSON Point | oui | `{ type: 'Point', coordinates: [lng, lat] }` | **serveur** (depuis `quartier`) |
 | `status` | String | oui | `open` · `assigned` · `completed` · `cancelled`, défaut `open` | **serveur** |
 | `urgent` | Boolean | non | défaut `false` | client |
+| `hidden` | Boolean | non | défaut `false` ; masquée = absente du catalogue (`/api/explore`) | client (propriétaire) |
 | `completedAt` | Date | non | rempli au passage à `completed` | **serveur** |
 
 - **Ajouté** : `scheduledAt` (**la date de la mission** manquait : seule la date de création existait), `completedAt`, `urgent`.
@@ -136,7 +137,8 @@ erDiagram
  cancelled ◄──────────────────────────────┘
 ```
 
-- `PATCH` / `DELETE` de la mission : seulement si `status = open`.
+- `PATCH` de la mission : seulement si `status = open`. Un membre ne supprime pas sa mission, il la **masque** (`hidden: true`).
+- `DELETE` : réservé aux administrateurs (modération), quel que soit le statut ; supprime aussi ses candidatures.
 - `open → assigned` : uniquement en acceptant une candidature (remplit `providerId`).
 - `assigned → completed` : uniquement par le propriétaire.
 

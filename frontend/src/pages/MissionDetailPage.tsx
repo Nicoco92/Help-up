@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin } from 'lucide-react'
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, Trash2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ApiError, exploreApi } from '../services/api'
+import { ApiError, exploreApi, missionsApi } from '../services/api'
+import { useAuth } from '../hooks/useAuth'
+import { Alert } from '../components/Alert'
+import { Button } from '../components/Button'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { StatusBadge } from '../components/StatusBadge'
 import { ApplyPanel } from '../components/ApplyPanel'
@@ -24,7 +27,62 @@ function BackButton() {
   )
 }
 
+// Modération : seul un administrateur voit ce bloc. L'API vérifie aussi le rôle (403 sinon) :
+// masquer le bouton n'est que de l'ergonomie, pas de la sécurité.
+function AdminDeletePanel({ mission }: { mission: Mission }) {
+  const navigate = useNavigate()
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    setError(null)
+    try {
+      await missionsApi.remove(mission.id)
+      navigate('/missions', { replace: true })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'La mission n’a pas pu être supprimée.')
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <section className="admin-panel" aria-label="Modération">
+      <div className="admin-panel__text">
+        <ShieldAlert size={20} aria-hidden="true" />
+        <div>
+          <strong>Modération</strong>
+          <p>
+            {confirming
+              ? `Supprimer définitivement « ${mission.title} » et ses candidatures ? Cette action est irréversible.`
+              : 'En tant qu’administrateur, tu peux supprimer cette mission.'}
+          </p>
+        </div>
+      </div>
+      {error && <Alert variant="error">{error}</Alert>}
+      <div className="admin-panel__actions">
+        {confirming ? (
+          <>
+            <Button variant="ghost" size="sm" disabled={deleting} onClick={() => setConfirming(false)}>
+              Annuler
+            </Button>
+            <Button variant="danger" size="sm" disabled={deleting} onClick={handleDelete} icon={<Trash2 size={15} />}>
+              {deleting ? 'Suppression…' : 'Confirmer la suppression'}
+            </Button>
+          </>
+        ) : (
+          <Button variant="danger" size="sm" onClick={() => setConfirming(true)} icon={<Trash2 size={15} />}>
+            Supprimer la mission
+          </Button>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export function MissionDetailPage() {
+  const { isAdmin } = useAuth()
   const { id } = useParams()
   const [mission, setMission] = useState<Mission | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -148,6 +206,8 @@ export function MissionDetailPage() {
 
         {/* Candidatures (Romain) : l'API n'affiche ici que des missions ouvertes d'autres membres */}
         {!mission.alreadyApplied && mission.status === 'open' && <ApplyPanel missionId={mission.id} />}
+
+        {isAdmin && <AdminDeletePanel mission={mission} />}
 
       </article>
     </div>

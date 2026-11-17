@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../utils/jwt'
 import { UnauthorizedError, ForbiddenError } from '../utils/errors'
-import { User } from '../models/user.model'
-import type { UserRole } from '../constants/roles'
+import { User } from '../../models/user.model'
+import type { UserRole } from '../../constants/roles'
 
 // Lit « Authorization: Bearer <JWT> », vérifie la signature et l'expiration, puis recharge
 // l'utilisateur en base (compte supprimé ou rôle modifié = pris en compte immédiatement).

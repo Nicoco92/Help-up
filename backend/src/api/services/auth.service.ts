@@ -1,4 +1,4 @@
-import { User, type IUserDocument } from '../models/user.model'
+import { User, type IUserDocument } from '../../models/user.model'
 import { hashPassword, comparePassword } from '../utils/password'
 import { signToken } from '../utils/jwt'
 import { ConflictError, UnauthorizedError } from '../utils/errors'

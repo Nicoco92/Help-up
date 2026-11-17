@@ -1,8 +1,8 @@
 import type { Types } from 'mongoose';
-import { Mission, type IMission } from '../models/mission.model';
-import { Application } from '../models/application.model';
-import { User } from '../models/user.model';
-import { Review } from '../models/review.model';
+import { Mission, type IMission } from '../../models/mission.model';
+import { Application } from '../../models/application.model';
+import { User } from '../../models/user.model';
+import { Review } from '../../models/review.model';
 import { BadRequestError } from '../utils/errors';
 import { toObjectId } from '../utils/objectId';
 import { PUBLIC_PERSON_FIELDS, toPublicPerson, type PublicPerson, type PublicPersonRecord } from '../utils/publicPerson';

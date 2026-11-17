@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../src/app';
+import app from '../src/api/app';
 import { Mission } from '../src/models/mission.model';
 import { Notification } from '../src/models/notification.model';
 import { connectTestDb, clearTestDb, closeTestDb } from './setup';

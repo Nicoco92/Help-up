@@ -1,10 +1,8 @@
-import fs from 'node:fs'
 import path from 'node:path'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import swaggerUi from 'swagger-ui-express'
-import YAML from 'yaml'
 import authRoutes from './routes/auth.routes'
 import userRoutes from './routes/user.routes'
 import exploreRoutes from './routes/explore.routes'
@@ -16,9 +14,10 @@ import reviewRoutes from './routes/reviews.routes'
 import userReviewRoutes from './routes/userReviews.routes'
 import notificationRoutes from './routes/notifications.routes'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
+import { loadOpenApi } from './utils/openapi'
 
-// Documentation OpenAPI (src/docs/openapi.yaml, copié dans dist/docs au build)
-const openapi = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8'))
+// Contrat OpenAPI : src/api/openapi/ (copié dans dist/api/openapi au build)
+const openapi = loadOpenApi(path.join(__dirname, 'openapi', 'openapi.yaml'))
 
 const app = express()
 
@@ -32,16 +31,20 @@ app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'ok' })
 })
 
-// Documentation interactive : http://localhost:3000/api/docs
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi))
+// Documentation interactive : http://localhost:3000/api/docs (contrat assemblé en JSON : /api/docs/openapi.json)
+app.get('/api/docs/openapi.json', (_req, res) => {
+  res.status(200).json(openapi)
+})
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { swaggerOptions: { showExtensions: true } }))
 
 app.use('/api/auth', authRoutes)
 // Avant userRoutes : /api/users/:id/reviews ne passe pas deux fois par requireAuth
 app.use('/api/users', userReviewRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/explore', exploreRoutes)
-app.use('/api/missions', missionRoutes)
+// Avant missionRoutes : /api/missions/:id/applications ne passe pas deux fois par requireAuth
 app.use('/api/missions', missionApplicationRoutes)
+app.use('/api/missions', missionRoutes)
 app.use('/api/applications', applicationRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/reviews', reviewRoutes)

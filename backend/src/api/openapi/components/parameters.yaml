@@ -1,0 +1,16 @@
+# Reusable parameters. Referenced as '../openapi.yaml#/components/parameters/<Name>'.
+IdPath:
+  name: id
+  in: path
+  required: true
+  description: MongoDB identifier (24 hexadecimal characters). Malformed → `400`.
+  schema:
+    $ref: '../openapi.yaml#/components/schemas/ObjectId'
+
+ApplicationIdPath:
+  name: applicationId
+  in: path
+  required: true
+  description: Identifier of an application to this mission. Malformed → `400`.
+  schema:
+    $ref: '../openapi.yaml#/components/schemas/ObjectId'

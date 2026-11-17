@@ -1,8 +1,11 @@
 import { Types } from 'mongoose'
-import { User, type IUserDocument } from '../models/user.model'
-import { NotFoundError, BadRequestError } from '../utils/errors'
+import { User, type IUserDocument } from '../../models/user.model'
+import { Mission } from '../../models/mission.model'
+import { Application } from '../../models/application.model'
+import { Notification } from '../../models/notification.model'
+import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors'
 import type { UpdateProfileInput } from '../validators/user.validator'
-import type { UserRole } from '../constants/roles'
+import type { UserRole } from '../../constants/roles'
 
 type PrivateUser = ReturnType<IUserDocument['toJSON']>
 
@@ -45,6 +48,30 @@ async function findUserOr404(id: string): Promise<IUserDocument> {
   return user
 }
 
+// Supprime un compte et ce qui n'a plus de sens sans lui. Refusé tant qu'une mission est en cours
+// (assigned), comme propriétaire ou comme prestataire : l'autre membre attend quelque chose.
+// Les missions terminées ou annulées restent pour l'historique de l'autre participant.
+async function deleteAccount(userId: string): Promise<void> {
+  const busy = await Mission.exists({
+    status: 'assigned',
+    $or: [{ ownerId: userId }, { providerId: userId }],
+  })
+  if (busy) {
+    throw new ConflictError(
+      'Termine ou annule tes missions en cours avant de supprimer le compte',
+      'CONFLICT',
+    )
+  }
+
+  const openMissionIds = await Mission.find({ ownerId: userId, status: 'open' }).distinct('_id')
+  await Application.deleteMany({ missionId: { $in: openMissionIds } })
+  await Mission.deleteMany({ _id: { $in: openMissionIds } })
+  await Application.updateMany({ applicantId: userId, status: 'pending' }, { status: 'withdrawn' })
+  // Ses notifications, et celles des autres membres qui pointent vers ses missions supprimées
+  await Notification.deleteMany({ $or: [{ userId }, { missionId: { $in: openMissionIds } }] })
+  await User.deleteOne({ _id: userId })
+}
+
 export class UserService {
   async getMe(userId: string): Promise<PrivateUser> {
     return (await findUserOr404(userId)).toJSON()
@@ -64,6 +91,21 @@ export class UserService {
 
     await user.save()
     return user.toJSON()
+  }
+
+  async deleteMe(userId: string): Promise<void> {
+    await findUserOr404(userId)
+    await deleteAccount(userId)
+  }
+
+  async deleteUser(targetId: string, requestingUser: IUserDocument): Promise<void> {
+    assertObjectId(targetId)
+    // Un admin supprime son propre compte par DELETE /api/users/me, en connaissance de cause.
+    if (targetId === requestingUser.id) {
+      throw new BadRequestError('Utilise la suppression de ton propre compte depuis ton profil')
+    }
+    await findUserOr404(targetId)
+    await deleteAccount(targetId)
   }
 
   async getUserById(

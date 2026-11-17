@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import { updateProfileSchema, updateRoleSchema } from '../validators/user.validator'
 import { userService } from '../services/user.service'
 import { UnauthorizedError } from '../utils/errors'
-import type { IUserDocument } from '../models/user.model'
+import type { IUserDocument } from '../../models/user.model'
 
 // Express 5 transmet automatiquement les erreurs des fonctions async au gestionnaire d'erreurs :
 // pas besoin de try/catch ni de next(err) dans les contrôleurs.
@@ -26,6 +26,16 @@ export class UserController {
     // .strict() rejette déjà id, _id, ownerId, email, role… avec un 400 INVALID_INPUT.
     const data = updateProfileSchema.parse(req.body)
     res.status(200).json(await userService.updateMe(currentUser(req).id, data))
+  }
+
+  async deleteMe(req: Request, res: Response): Promise<void> {
+    await userService.deleteMe(currentUser(req).id)
+    res.status(204).end()
+  }
+
+  async deleteUser(req: Request, res: Response): Promise<void> {
+    await userService.deleteUser(paramId(req), currentUser(req))
+    res.status(204).end()
   }
 
   async getUserById(req: Request, res: Response): Promise<void> {
