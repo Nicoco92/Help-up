@@ -41,25 +41,25 @@ full-stack-js/
 ├── .gitignore                # node_modules/, builds, tous les .env sauf .env.example, logs, éditeurs
 ├── frontend/                 # modèle Vite react, ESLint ; vite.config.js `envDir: '..'` (lit le .env racine) — jamais de secret préfixé VITE_ (exposé au navigateur)
 └── backend/
-    ├── src/app.ts            # helmet, cors, json, GET /api/health, Swagger /api/docs, 5 routeurs /api/{auth,users,missions,explore,applications}, puis notFound + errorHandler ; n'ouvre pas de port
+    ├── src/app.ts            # helmet, cors, json(100kb), GET /api/health, Swagger /api/docs, routeurs /api/{auth,users,explore,missions,applications}, puis notFoundHandler (sur /api) + errorHandler ; n'ouvre pas de port
     ├── src/server.ts         # dotenv + mongoose.connect + app.listen(PORT)
     ├── src/constants/        # categories.ts, quartiers.ts (Paris sud + Villejuif, [lng, lat]), statuses.ts : source unique, `as const` + types (CategorySlug, QuartierSlug, MissionStatus…) ; *_SLUGS = tuples pour z.enum
-    ├── src/utils/            # AppError.ts (codes INVALID_INPUT|UNAUTHORIZED|NOT_FOUND|EMAIL_ALREADY_USED|CONFLICT|INTERNAL_ERROR, helpers statiques notFound()…), toJSON.ts (plugin : _id→id, retire __v/passwordHash), objectId.ts (isObjectId, toObjectId → 400)
-    ├── src/middlewares/      # errorHandler.ts (headersSent, AppError, JSON invalide 400, CastError 400, doublon 11000 → 409, sinon 500) + notFound ; validate.ts (validate(schema) sur req.body, parse(schema, data) pour req.query) ; auth.ts (requireAuth : Bearer JWT {sub} → res.locals.userId, sinon 401)
-    ├── src/models/           # Mission.ts, Application.ts (index nommés comme dans sql/seed.js, versionKey false) ; User = Nicolas
-    ├── src/routes/           # auth/users/missions (Nicolas, vides), applications (Romain, vide), explore.routes.ts (Yaël, fait : /api/explore/missions[/:id] + carte) ; explore utilise AppError/errorHandler/requireAuth/parse communs
+    ├── src/utils/            # errors.ts (Nicolas : AppError(status, code, message) + BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError, ConflictError), jwt.ts, password.ts, toJSON.ts (plugin _id→id), objectId.ts (isObjectId, toObjectId → BadRequestError)
+    ├── src/middlewares/      # error.middleware.ts (base commune : headersSent, AppError, ZodError 400, JSON invalide 400, CastError/ValidationError 400, 11000 → 409 EMAIL_ALREADY_USED si index email sinon CONFLICT, sinon 500) ; auth.middleware.ts (requireAuth : Bearer JWT {sub}, recharge l'utilisateur → req.user / req.userId, sinon 401 ; requireRole) ; validate.ts (validate(schema) = schema.parse(req.body))
+    ├── src/models/           # user.model.ts (Nicolas), mission.model.ts, application.model.ts (exports nommés Mission/Application, index nommés comme dans sql/seed.js, versionKey false)
+    ├── src/routes/           # *.routes.ts : auth, user (Nicolas, faits), explore (Yaël, fait : /api/explore/missions[/:id]), missions (vide), applications (Romain, vide). Validation dans les contrôleurs : schema.parse(req.body), la ZodError part vers error.middleware
     ├── src/docs/openapi.yaml # spec OpenAPI écrite à la main (yaml + swagger-ui-express), bearerAuth par défaut ; copiée dans dist/docs au build
-    ├── src/{controllers,services,validators}/   # vides
+    ├── src/{controllers,services,validators}/   # auth, user (Nicolas), explore (Yaël) ; types/express.d.ts (req.user, req.userId)
     ├── sql/seed.js           # mongosh autonome : base vide (collections + $jsonSchema + index), relançable ; exécutable sur Atlas (Compass > MONGOSH ou docker mongosh)
     ├── migration/seed-demo.js # mongosh autonome : structure (copie de sql/seed.js) + démo déterministe, comptes @helpup.test (mdp password123, hash bcrypt en dur) ; RESET=true ne touche que la démo ; pas de JWT
     ├── scripts/mongosh.sh    # npm run db:demo | db:create : lance le script via docker mongo:7.0 sur MONGODB_URI du fichier d'env racine ; s'arrête si une base de même nom/autre casse existe (ex. HelpUP)
-    ├── tests/                # health, errors (format d'erreur + validate, sans base), docs (Swagger) — Jest + ts-jest + Supertest
+    ├── tests/                # health, errors (format d'erreur + validate, sans base), docs (Swagger), auth, user, explore (mongodb-memory-server, helpers tests/setup.ts) — Jest + ts-jest + Supertest
     ├── tsconfig.json         # NodeNext (sortie CommonJS), strict, types node+jest, noEmit (typecheck src+tests)
     ├── tsconfig.build.json   # build src/ → dist/
     └── eslint.config.js      # flat config CJS : typescript-eslint pour *.ts, globales mongosh pour sql/ et migration/
 ```
 - Backend en TypeScript, syntaxe `import`/`export`, compilé en CommonJS (`module: NodeNext` + `"type": "commonjs"`) : imports relatifs sans extension. Frontend en TypeScript ESM (`tsconfig.app.json` pour src, `tsconfig.node.json` pour vite.config.ts, `src/vite-env.d.ts` type `VITE_API_URL`).
-- Scripts du backend : `dev` (`tsx watch src/server.ts`), `build` (tsc → dist/), `start` (`node dist/server.js`), `typecheck`, `test` (`jest --runInBand`, preset ts-jest), `lint`, `db:create`, `db:demo`.
+- Scripts du backend : `dev` (`tsx watch src/server.ts`), `build` (tsc → dist/ + copie src/docs), `start` (`node dist/server.js`), `typecheck`, `test` (`NODE_OPTIONS=--experimental-vm-modules jest --runInBand`, preset ts-jest, timeout 30 s ; sans ce flag, le driver mongodb 7.8 ne peut pas faire son `import('os')` dans Jest et toute connexion mongodb-memory-server échoue avec « Missing required sub-document 'driver' »), `lint`, `db:create`, `db:demo`.
 - Scripts du frontend : `dev`, `build` (`tsc -b && vite build`), `typecheck`, `lint`, `preview`.
 - Docker Compose :
   - Mode développement : le code est monté en volume et les `node_modules` sont dans des volumes nommés.

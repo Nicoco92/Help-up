@@ -42,6 +42,6 @@ missionSchema.index({ providerId: 1, status: 1 }, { name: 'provider_status' });
 
 missionSchema.plugin(toJSON);
 
-export type Mission = InferSchemaType<typeof missionSchema>;
+export type IMission = InferSchemaType<typeof missionSchema>;
 
-export default model('Mission', missionSchema);
+export const Mission = model('Mission', missionSchema);

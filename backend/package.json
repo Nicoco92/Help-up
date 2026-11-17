@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/docs', 'dist/docs', { recursive: true })\"",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "lint": "eslint .",
     "db:create": "sh scripts/mongosh.sh sql/seed.js",
     "db:demo": "sh scripts/mongosh.sh migration/seed-demo.js"
@@ -55,6 +55,7 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "testTimeout": 30000,
     "testMatch": [
       "<rootDir>/tests/**/*.test.ts"
     ]

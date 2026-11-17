@@ -24,6 +24,6 @@ applicationSchema.index({ missionId: 1, status: 1 }, { name: 'mission_status' })
 
 applicationSchema.plugin(toJSON);
 
-export type Application = InferSchemaType<typeof applicationSchema>;
+export type IApplication = InferSchemaType<typeof applicationSchema>;
 
-export default model('Application', applicationSchema);
+export const Application = model('Application', applicationSchema);

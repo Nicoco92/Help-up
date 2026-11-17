@@ -51,7 +51,7 @@ components:
           properties:
             code:
               type: string
-              enum: [INVALID_INPUT, UNAUTHORIZED, NOT_FOUND, EMAIL_ALREADY_USED, CONFLICT, INTERNAL_ERROR]
+              enum: [INVALID_INPUT, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, EMAIL_ALREADY_USED, CONFLICT, INTERNAL_ERROR]
             message: { type: string }
 
     Mission:

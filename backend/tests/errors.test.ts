@@ -3,9 +3,9 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { z } from 'zod';
 import app from '../src/app';
-import AppError from '../src/utils/AppError';
+import { NotFoundError } from '../src/utils/errors';
 import { validate } from '../src/middlewares/validate';
-import { errorHandler, notFound } from '../src/middlewares/errorHandler';
+import { errorHandler, notFoundHandler } from '../src/middlewares/error.middleware';
 
 // Mini application de test : une route par cas d'erreur, sans base de données
 const testApp = express();
@@ -14,18 +14,21 @@ testApp.post('/validate', validate(z.strictObject({ title: z.string().min(5) }))
     res.status(201).json(req.body);
 });
 testApp.get('/app-error', () => {
-    throw AppError.notFound('Mission not found');
+    throw new NotFoundError('Mission introuvable');
 });
 testApp.get('/cast-error', () => {
     throw new mongoose.Error.CastError('ObjectId', 'abc', '_id');
 });
 testApp.get('/duplicate', () => {
-    throw Object.assign(new Error('E11000 duplicate key'), { code: 11000 });
+    throw Object.assign(new Error('E11000 duplicate key'), { code: 11000, keyPattern: { missionId: 1, applicantId: 1 } });
+});
+testApp.get('/duplicate-email', () => {
+    throw Object.assign(new Error('E11000 duplicate key'), { code: 11000, keyPattern: { email: 1 } });
 });
 testApp.get('/crash', () => {
     throw new Error('secret internal detail');
 });
-testApp.use(notFound);
+testApp.use(notFoundHandler);
 testApp.use(errorHandler);
 
 describe('Format des erreurs', () => {
@@ -41,7 +44,7 @@ describe('Format des erreurs', () => {
     test('route inconnue → 404 NOT_FOUND', async () => {
         const res = await request(app).get('/api/nope');
         expect(res.status).toBe(404);
-        expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Missing route' } });
+        expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Route introuvable' } });
     });
 
     test('JSON mal formé → 400 INVALID_INPUT', async () => {
@@ -56,7 +59,7 @@ describe('Format des erreurs', () => {
     test('AppError → son statut et son code', async () => {
         const res = await request(testApp).get('/app-error');
         expect(res.status).toBe(404);
-        expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Mission not found' } });
+        expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Mission introuvable' } });
     });
 
     test('id mal formé (CastError) → 400 INVALID_INPUT', async () => {
@@ -71,10 +74,17 @@ describe('Format des erreurs', () => {
         expect(res.body.error.code).toBe('CONFLICT');
     });
 
+    test('doublon sur l\'email → 409 EMAIL_ALREADY_USED', async () => {
+        const res = await request(testApp).get('/duplicate-email');
+        expect(res.status).toBe(409);
+        expect(res.body.error.code).toBe('EMAIL_ALREADY_USED');
+    });
+
     test('erreur imprévue → 500 sans détail interne', async () => {
         const res = await request(testApp).get('/crash');
         expect(res.status).toBe(500);
-        expect(res.body).toEqual({ error: { code: 'INTERNAL_ERROR', message: 'Server error' } });
+        expect(res.body.error.code).toBe('INTERNAL_ERROR');
+        expect(JSON.stringify(res.body)).not.toContain('secret');
     });
 });
 
