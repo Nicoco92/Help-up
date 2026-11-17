@@ -11,6 +11,7 @@ import exploreRoutes from './routes/explore.routes'
 import missionRoutes from './routes/missions.routes'
 import applicationRoutes from './routes/applications.routes'
 import missionApplicationRoutes from './routes/missionApplications.routes'
+import dashboardRoutes from './routes/dashboard.routes'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
 
 // Documentation OpenAPI (src/docs/openapi.yaml, copié dans dist/docs au build)
@@ -37,6 +38,7 @@ app.use('/api/explore', exploreRoutes)
 app.use('/api/missions', missionRoutes)
 app.use('/api/missions', missionApplicationRoutes)
 app.use('/api/applications', applicationRoutes)
+app.use('/api/dashboard', dashboardRoutes)
 
 app.use('/api', notFoundHandler)
 app.use(errorHandler)

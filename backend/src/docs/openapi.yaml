@@ -18,6 +18,7 @@ tags:
   - name: Missions
   - name: Explore
   - name: Applications
+  - name: Dashboard
 
 paths:
   /api/health:
@@ -172,6 +173,42 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  # --- Suivi des missions (Romain) ---
+  /api/missions/{id}/complete:
+    parameters:
+      - { name: id, in: path, required: true, description: Id d'une de MES missions, schema: { type: string } }
+    post:
+      tags: [Missions]
+      summary: Marquer une mission attribuée comme terminée (propriétaire uniquement)
+      description: "`assigned` → `completed`, avec `completedAt`. Une mission ouverte ou déjà terminée renvoie 400 ; celle d'un autre membre, 404."
+      responses:
+        '200':
+          description: Mission terminée
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/MissionSummary'
+                  - type: object
+                    properties:
+                      completedAt: { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Tableau de bord de l'utilisateur connecté
+      description: Missions publiées en cours (avec le nombre de candidatures), missions obtenues, historique des missions terminées et statistiques.
+      responses:
+        '200':
+          description: Tableau de bord
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -273,6 +310,41 @@ components:
                 city: { type: string }
                 avatarUrl: { type: string }
                 skills: { type: array, items: { type: string } }
+
+    DashboardMission:
+      allOf:
+        - $ref: '#/components/schemas/MissionSummary'
+        - type: object
+          properties:
+            completedAt: { type: string, format: date-time, nullable: true }
+            role: { type: string, enum: [owner, provider], description: owner = je l'ai publiée, provider = je la réalise }
+            pendingApplications: { type: integer }
+            totalApplications: { type: integer }
+            counterpart:
+              type: object
+              nullable: true
+              description: Le prestataire retenu (mes missions) ou le client (missions obtenues)
+              properties:
+                id: { type: string }
+                firstName: { type: string }
+                lastName: { type: string, example: D. }
+                city: { type: string }
+                avatarUrl: { type: string }
+
+    Dashboard:
+      type: object
+      properties:
+        stats:
+          type: object
+          properties:
+            openMissions: { type: integer }
+            pendingApplications: { type: integer }
+            obtainedMissions: { type: integer }
+            completedMissions: { type: integer }
+            earnedCents: { type: integer, description: Total gagné comme prestataire, en centimes }
+        published: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
+        obtained: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
+        history: { type: array, items: { $ref: '#/components/schemas/DashboardMission' } }
 
   # Réponses d'erreur réutilisables : $ref: '#/components/responses/NotFound'
   responses:

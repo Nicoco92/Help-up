@@ -1,0 +1,194 @@
+/* Tableau de bord : statistiques, missions publiées (candidats), obtenues, historique */
+
+/* --- Statistiques --- */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0 0 var(--space-10);
+}
+
+.dashboard-stats div {
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-separator);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+}
+
+.dashboard-stats dt {
+    font-size: var(--text-footnote);
+    color: var(--color-label-secondary);
+}
+
+.dashboard-stats dd {
+    margin: var(--space-1) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title-2);
+    font-weight: 700;
+    color: var(--color-label);
+}
+
+/* --- Sections --- */
+.dashboard-section {
+    margin-bottom: var(--space-10);
+}
+
+.dashboard-section h2 {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-title-2);
+}
+
+/* --- Carte d'une mission publiée --- */
+.dashboard-assigned {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-field);
+    background: var(--color-surface-tinted);
+}
+
+.dashboard-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-self: start;
+    min-height: 36px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-tint);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-toggle svg:last-child {
+    transition: transform var(--duration-fast);
+}
+
+.dashboard-toggle svg.is-open {
+    transform: rotate(180deg);
+}
+
+.dashboard-toggle:focus-visible {
+    outline: 2px solid var(--color-tint);
+    outline-offset: 2px;
+}
+
+/* --- Candidats --- */
+.candidates {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.candidates--loading {
+    justify-items: center;
+    padding: var(--space-4);
+}
+
+.candidate {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-separator);
+    border-radius: var(--radius-field);
+}
+
+.candidate__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.candidate__who {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.candidate__who span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--text-footnote);
+    color: var(--color-label-secondary);
+}
+
+.candidate__message {
+    color: var(--color-label-secondary);
+    font-style: italic;
+    overflow-wrap: anywhere;
+}
+
+.candidate__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.candidate__actions span {
+    flex-basis: 100%;
+    font-size: var(--text-footnote);
+}
+
+/* --- Historique --- */
+.history-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--color-separator);
+}
+
+.history-row:first-child {
+    padding-top: 0;
+}
+
+.history-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.history-row div {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.history-row span {
+    font-size: var(--text-footnote);
+    color: var(--color-label-secondary);
+}
+
+.history-row__earned {
+    color: var(--color-tint);
+}
+
+@media (max-width: 760px) {
+    .dashboard-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .candidate__head {
+        flex-wrap: wrap;
+    }
+
+    .history-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+}
