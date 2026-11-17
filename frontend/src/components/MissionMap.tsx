@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap } from 'react-leaflet'
 import { Box, Map as MapIcon } from 'lucide-react'
 import type { Mission } from '../types/mission'
 import { Button } from './Button'
@@ -118,9 +118,10 @@ function LeafletMapView({
   onHover: (id: string | null) => void
 }) {
   return (
-    <MapContainer center={[48.827, 2.35]} zoom={12} scrollWheelZoom>
+    <MapContainer center={[48.827, 2.35]} zoom={12} scrollWheelZoom zoomControl={false}>
       <ResizeMap />
       <FitMissions missions={missions} />
+      <ZoomControl position="topright" />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
