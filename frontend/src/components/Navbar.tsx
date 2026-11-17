@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ChevronDown, Compass, LogOut, Menu, Shield, User as UserIcon, Users, X } from 'lucide-react'
+import { ChevronDown, Compass, FileText, LogOut, Menu, Shield, User as UserIcon, Users, X } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Logo } from './Logo'
 import { Avatar } from './Avatar'
@@ -118,6 +118,10 @@ export function Navbar() {
             <NavLink to="/missions" className={linkClass}>
               <Compass size={18} aria-hidden="true" />
               Missions
+            </NavLink>
+            <NavLink to="/applications" className={linkClass}>
+              <FileText size={18} aria-hidden="true" />
+              Candidatures
             </NavLink>
             <NavLink to="/users" className={linkClass}>
               <Users size={18} aria-hidden="true" />

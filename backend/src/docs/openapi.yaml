@@ -35,6 +35,143 @@ paths:
                 properties:
                   status: { type: string, example: ok }
 
+  # --- Candidatures (Romain) ---
+  /api/applications:
+    get:
+      tags: [Applications]
+      summary: Mes candidatures (les plus récentes d'abord)
+      responses:
+        '200':
+          description: Liste, vide si aucune candidature
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ApplicationWithMission' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Applications]
+      summary: Postuler à une mission
+      description: |
+        Règles : mission existante (404), ouverte (400), pas la sienne (400), une seule candidature par mission (409 CONFLICT).
+        `applicantId` et `status` sont fixés par le serveur : les envoyer renvoie 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApplicationInput' }
+      responses:
+        '201':
+          description: Candidature créée (status pending)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationWithMission' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/applications/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Applications]
+      summary: Une de mes candidatures
+      responses:
+        '200':
+          description: Candidature
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationWithMission' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Applications]
+      summary: Modifier le message (candidature en attente uniquement)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              additionalProperties: false
+              properties:
+                message: { type: string, minLength: 10, maxLength: 500 }
+      responses:
+        '200':
+          description: Candidature modifiée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationWithMission' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Applications]
+      summary: Retirer ma candidature (en attente uniquement)
+      responses:
+        '204': { description: Candidature retirée }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/missions/{id}/applications:
+    parameters:
+      - { name: id, in: path, required: true, description: Id d'une de MES missions, schema: { type: string } }
+    get:
+      tags: [Applications]
+      summary: Candidats d'une de mes missions (profil public, sans email ni téléphone)
+      responses:
+        '200':
+          description: Liste des candidatures, de la plus ancienne à la plus récente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ApplicationWithApplicant' } }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/missions/{id}/applications/{applicationId}/accept:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: applicationId, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Applications]
+      summary: Accepter un candidat
+      description: La mission passe `assigned` avec `providerId` = le candidat ; les autres candidatures en attente passent `rejected`.
+      responses:
+        '200':
+          description: Candidature acceptée, avec la mission mise à jour
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationWithMission' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/missions/{id}/applications/{applicationId}/reject:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: applicationId, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Applications]
+      summary: Refuser un candidat (la mission reste ouverte)
+      responses:
+        '200':
+          description: Candidature refusée
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApplicationWithMission' }
+        '400': { $ref: '#/components/responses/InvalidInput' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -88,6 +225,54 @@ components:
         status: { type: string, enum: [pending, accepted, rejected, withdrawn] }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+
+    ApplicationInput:
+      type: object
+      required: [missionId, message]
+      additionalProperties: false
+      properties:
+        missionId: { type: string, example: 6650f0c2a1b2c3d4e5f60789 }
+        message: { type: string, minLength: 10, maxLength: 500, example: Bonjour, je suis disponible samedi matin. }
+
+    MissionSummary:
+      type: object
+      properties:
+        id: { type: string }
+        ownerId: { type: string }
+        providerId: { type: string, nullable: true }
+        title: { type: string }
+        status: { type: string, enum: [open, assigned, completed, cancelled] }
+        rewardCents: { type: integer }
+        estimatedMinutes: { type: integer }
+        category: { type: string }
+        categoryLabel: { type: string }
+        quartier: { type: string }
+        quartierLabel: { type: string }
+        scheduledAt: { type: string, format: date-time }
+        urgent: { type: boolean }
+
+    ApplicationWithMission:
+      allOf:
+        - $ref: '#/components/schemas/Application'
+        - type: object
+          properties:
+            mission: { allOf: [{ $ref: '#/components/schemas/MissionSummary' }], nullable: true }
+
+    ApplicationWithApplicant:
+      allOf:
+        - $ref: '#/components/schemas/Application'
+        - type: object
+          properties:
+            applicant:
+              type: object
+              nullable: true
+              properties:
+                id: { type: string }
+                firstName: { type: string }
+                lastName: { type: string, description: Initiale seulement, example: D. }
+                city: { type: string }
+                avatarUrl: { type: string }
+                skills: { type: array, items: { type: string } }
 
   # Réponses d'erreur réutilisables : $ref: '#/components/responses/NotFound'
   responses:
