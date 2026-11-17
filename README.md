@@ -79,6 +79,7 @@ docker compose down        # arrêter (les données sont gardées)
 |---|---|
 | Frontend | http://localhost:5173 |
 | API | http://localhost:3000/api/health |
+| Documentation de l'API (Swagger) | http://localhost:3000/api/docs |
 | MongoDB (Compass, mongosh) | `127.0.0.1:27017` (authentification obligatoire) |
 
 Interface d'admin mongo-express sur http://localhost:8081, identifiants `ME_USER` / `ME_PASSWORD` du `.env` :
@@ -145,6 +146,7 @@ Comptes de démo (mot de passe `password123`) :
 
 ## Documentation
 
+- [Documentation de l'API](backend/src/docs/openapi.yaml) (OpenAPI 3) : servie en interface Swagger sur http://localhost:3000/api/docs. Le bouton « Authorize » permet de coller un JWT pour tester les routes protégées. Chacun ajoute ses routes dans `paths` (toutes exigent le JWT par défaut, `security: []` pour une route publique) et réutilise les réponses d'erreur de `components.responses`.
 - [Plan de développement](docs/plan-features.md) : répartition des features, contrat d'API, dépendances et diagramme de Gantt.
 - [Modèle de données](docs/modele-donnees.md) : User, Mission, Application, Review (champs, contraintes, index, cycle de vie, scripts).
 - [Charte graphique](docs/charte-graphique.md) : couleurs (clair et sombre), typographie, composants, carte, ton éditorial et variables CSS.

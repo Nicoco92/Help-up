@@ -25,9 +25,13 @@ export function errorHandler(
   _req: Request,
   res: Response,
   // Express reconnaît un gestionnaire d'erreurs à ses 4 paramètres.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _next: NextFunction,
+  next: NextFunction,
 ): void {
+  // Réponse déjà partiellement envoyée : on laisse Express couper la connexion.
+  if (res.headersSent) {
+    return next(err)
+  }
+
   if (err instanceof AppError) {
     return sendError(res, err.statusCode, err.code, err.message)
   }
@@ -42,16 +46,20 @@ export function errorHandler(
   }
 
   if (typeof err === 'object' && err !== null) {
-    const { name, code } = err as { name?: string; code?: number }
+    const { name, code, keyPattern } = err as { name?: string; code?: number; keyPattern?: Record<string, unknown> }
     if (name === 'CastError') {
       return sendError(res, 400, 'INVALID_INPUT', 'Identifiant invalide')
     }
     if (name === 'ValidationError') {
       return sendError(res, 400, 'INVALID_INPUT', 'Données invalides')
     }
-    // Index unique sur l'email (course entre deux inscriptions simultanées).
+    // Doublon sur un index unique : l'email (course entre deux inscriptions simultanées),
+    // ou un autre index (ex. deux candidatures du même membre sur la même mission).
     if (code === 11000) {
-      return sendError(res, 409, 'EMAIL_ALREADY_USED', 'Cet email est déjà utilisé')
+      if (keyPattern && 'email' in keyPattern) {
+        return sendError(res, 409, 'EMAIL_ALREADY_USED', 'Cet email est déjà utilisé')
+      }
+      return sendError(res, 409, 'CONFLICT', 'Cette ressource existe déjà')
     }
   }
 
