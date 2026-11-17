@@ -40,9 +40,9 @@ function AccountMenu() {
       <button
         type="button"
         className="account-menu__trigger"
-        aria-label={`Menu du compte de ${user.firstName}`}
-        aria-haspopup="menu"
+        aria-label={`Compte de ${user.firstName}`}
         aria-expanded={open}
+        aria-controls="account-menu-panel"
         onClick={() => setOpen((v) => !v)}
       >
         <Avatar {...user} size={34} />
@@ -50,7 +50,7 @@ function AccountMenu() {
         <ChevronDown size={16} aria-hidden="true" />
       </button>
       {open && (
-        <div className="account-menu__panel" role="menu">
+        <div className="account-menu__panel" id="account-menu-panel">
           <div className="account-menu__header">
             <strong>{fullName(user)}</strong>
             <span>{user.email}</span>
@@ -58,7 +58,6 @@ function AccountMenu() {
           <Link
             to="/profile"
             className="account-menu__item"
-            role="menuitem"
             onClick={() => setOpen(false)}
           >
             <UserIcon size={18} aria-hidden="true" />
@@ -68,7 +67,6 @@ function AccountMenu() {
             <Link
               to="/admin"
               className="account-menu__item"
-              role="menuitem"
               onClick={() => setOpen(false)}
             >
               <Shield size={18} aria-hidden="true" />
@@ -78,7 +76,6 @@ function AccountMenu() {
           <button
             type="button"
             className="account-menu__item account-menu__item--danger"
-            role="menuitem"
             onClick={handleLogout}
           >
             <LogOut size={18} aria-hidden="true" />
@@ -152,7 +149,7 @@ export function Navbar() {
                 aria-controls="main-nav"
                 onClick={() => setMobileOpen((v) => !v)}
               >
-                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+                {mobileOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
               </button>
             </>
           ) : (

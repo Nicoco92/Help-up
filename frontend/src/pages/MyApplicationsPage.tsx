@@ -162,13 +162,12 @@ export function MyApplicationsPage() {
                     </EmptyState>
                 ) : applications ? (
                     <>
-                        <div className="segmented" role="tablist" aria-label="Filtrer par statut">
+                        <div className="segmented" role="group" aria-label="Filtrer par statut">
                             {FILTERS.map((f) => (
                                 <button
                                     key={f.value}
                                     type="button"
-                                    role="tab"
-                                    aria-selected={filter === f.value}
+                                    aria-pressed={filter === f.value}
                                     className={`segmented__item${filter === f.value ? ' is-active' : ''}`}
                                     onClick={() => setFilter(f.value)}
                                 >

@@ -81,7 +81,7 @@
 }
 
 .segmented__item {
-    min-height: 36px;
+    min-height: var(--target-min);
     padding: 0 var(--space-4);
     border: 0;
     border-radius: var(--radius-pill);
@@ -99,8 +99,8 @@
 }
 
 .segmented__item:focus-visible {
-    outline: 2px solid var(--color-tint);
-    outline-offset: 2px;
+    outline: var(--focus-ring-width) solid var(--color-tint);
+    outline-offset: var(--focus-ring-offset);
 }
 
 /* --- Liste et carte de candidature --- */

@@ -47,8 +47,8 @@
 }
 
 .star-input__star:has(input:focus-visible) {
-    outline: 3px solid var(--color-tint);
-    outline-offset: 2px;
+    outline: var(--focus-ring-width) solid var(--color-tint);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .star-input__label {

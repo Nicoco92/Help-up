@@ -3,6 +3,7 @@ import { ApiError, reviewsApi } from '../services/api';
 import { StarRatingInput } from './StarRating';
 import { TextAreaField } from './Field';
 import { Alert } from './Alert';
+import { useDraft } from '../hooks/useDraft';
 
 const MAX = 500;
 
@@ -19,8 +20,9 @@ interface ReviewFormProps {
 // Noter l'autre participant d'une mission terminée (création ou modification)
 // Le serveur revérifie tout : mission terminée, participant, un seul avis, note entière de 1 à 5
 export function ReviewForm({ missionId, targetName, existing, onSaved, onCancel }: ReviewFormProps) {
-    const [rating, setRating] = useState(existing?.rating ?? 0);
-    const [comment, setComment] = useState(existing?.comment ?? '');
+    // Brouillon conservé si la session expire pendant la saisie
+    const [rating, setRating, clearRating] = useDraft(`review.${missionId}.rating`, existing?.rating ?? 0);
+    const [comment, setComment, clearComment] = useDraft(`review.${missionId}.comment`, existing?.comment ?? '');
     const [ratingError, setRatingError] = useState<string | undefined>();
     const [error, setError] = useState<string | null>(null);
     const [sending, setSending] = useState(false);
@@ -40,6 +42,8 @@ export function ReviewForm({ missionId, targetName, existing, onSaved, onCancel 
             } else {
                 await reviewsApi.create(missionId, payload);
             }
+            clearRating();
+            clearComment();
             onSaved();
         } catch (cause) {
             setError(
@@ -75,7 +79,16 @@ export function ReviewForm({ missionId, targetName, existing, onSaved, onCancel 
                 hint="Votre avis est visible sur le profil de ce membre."
             />
             <div className="review-form__actions">
-                <button type="button" className="btn btn--secondary btn--sm" onClick={onCancel} disabled={sending}>
+                <button
+                    type="button"
+                    className="btn btn--secondary btn--sm"
+                    onClick={() => {
+                        clearRating();
+                        clearComment();
+                        onCancel();
+                    }}
+                    disabled={sending}
+                >
                     Annuler
                 </button>
                 <button type="submit" className="btn btn--primary btn--sm" disabled={sending}>

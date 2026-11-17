@@ -20,6 +20,11 @@ function formatReward(value: number) {
   return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value / 100)
 }
 
+// Mouvement réduit demandé par le système : la carte se place sans animation (WCAG 2.3.3 AAA)
+function motionDuration(ms: number) {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms
+}
+
 function addBuildingsLayer(map: MapLibreMap) {
   if (map.getLayer(buildingsLayerId) || !map.getSource('openmaptiles')) return
 
@@ -73,7 +78,7 @@ export function MissionMap3D({
     const map = mapRef.current?.getMap()
     if (!map || !mapLoaded) return
     addBuildingsLayer(map)
-    map.easeTo({ pitch: 55, bearing: -18, duration: 650 })
+    map.easeTo({ pitch: 55, bearing: -18, duration: motionDuration(650) })
   }, [mapLoaded])
 
   useEffect(() => {
@@ -81,7 +86,7 @@ export function MissionMap3D({
     if (!map || !mapLoaded || positions.length === 0) return
 
     if (positions.length === 1) {
-      map.flyTo({ center: positions[0], zoom: 15, duration: 500 })
+      map.flyTo({ center: positions[0], zoom: 15, duration: motionDuration(500) })
       return
     }
 
@@ -89,7 +94,7 @@ export function MissionMap3D({
       (result, position) => result.extend(position),
       new LngLatBounds(positions[0], positions[0]),
     )
-    map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 500 })
+    map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: motionDuration(500) })
   }, [mapLoaded, positions])
 
   return (

@@ -563,7 +563,7 @@
 }
 
 .map-mode-control .button {
-  min-height: 36px;
+  min-height: var(--target-min);
 }
 
 .maplibre-view {
@@ -610,8 +610,10 @@
 }
 
 .maplibre-price-marker:focus-visible {
-  outline: 3px solid var(--color-signal);
+  /* Anneau vert + halo de la couleur de surface : visible sur la carte claire comme sur les bâtiments */
+  outline: var(--focus-ring-width) solid var(--color-tint);
   outline-offset: 3px;
+  box-shadow: 0 0 0 calc(var(--focus-ring-width) + 6px) var(--color-surface);
 }
 
 .maplibre-view .maplibregl-ctrl-group {
@@ -668,6 +670,13 @@
     transform var(--duration-base) ease,
     background-color var(--duration-base) ease,
     color var(--duration-base) ease;
+}
+
+/* Le marqueur fait 32 px de haut ; sa zone cliquable est agrandie à 44 px (WCAG 2.5.5 AAA) */
+.price-marker::before {
+  position: absolute;
+  inset: -6px -2px;
+  content: '';
 }
 
 .price-marker.is-highlighted {
@@ -729,7 +738,7 @@
 
 .map-popup a {
   display: inline-flex;
-  min-height: 40px;
+  min-height: var(--target-min);
   align-items: center;
   color: var(--color-tint);
   font-weight: 650;
