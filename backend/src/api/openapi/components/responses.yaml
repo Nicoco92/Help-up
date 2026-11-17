@@ -34,3 +34,21 @@ Conflict:
     application/json:
       schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
       example: { error: { code: CONFLICT, message: Seule une mission ouverte peut être modifiée } }
+
+PayloadTooLarge:
+  description: Request body larger than 100 kB
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: PAYLOAD_TOO_LARGE, message: Requête trop volumineuse (100 ko maximum) } }
+
+TooManyRequests:
+  description: |
+    Rate limit reached (per IP): login 10 failures / 15 min (successful logins are not counted),
+    register 20 / hour, whole API 300 / minute. `Retry-After` and `RateLimit` headers tell when to retry.
+  headers:
+    Retry-After: { schema: { type: integer }, description: Seconds before retrying }
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: TOO_MANY_REQUESTS, message: Trop de tentatives de connexion. Réessaie dans 15 minutes. } }

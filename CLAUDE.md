@@ -27,6 +27,7 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 - **Back** : Node.js et Express 5, organisé en routes, contrôleurs, services et modèles.
 - **Base de données** : MongoDB avec Mongoose.
 - **Authentification** : bcrypt pour le hachage, JWT signé avec `JWT_SECRET`, middleware qui lit le jeton `Bearer`.
+- **Sécurité** (audit : `docs/securite.md`, tests d'attaque : `backend/tests/security.test.ts`) : bcrypt coût 12 (4 sous Jest) avec re-hachage à la connexion ; JWT HS256 + `iss`/`aud` vérifiés, 1 h par défaut, secret ≥ 32 caractères (refus en production) ; `express-rate-limit` (connexion 10 échecs/15 min, inscription 20/h, API 300/min, coupé sous Jest sauf `RATE_LIMIT_IN_TESTS=true`) ; `securityLog` (JSON, jamais d'email/mot de passe/jeton) ; `Cache-Control: no-store` ; 413 au format commun ; ports Docker sur 127.0.0.1 ; `TRUST_PROXY` ; CSP et en-têtes du front dans `vite.config.ts` (CSP seulement en `preview`, pas en dev à cause du HMR) ; Dependabot.
 - **Validation** : zod, côté serveur. Elle est obligatoire même si React valide déjà les formulaires.
 - **Qualité** : ESLint (flat config) côté front et côté back. oxlint a été retiré. `typescript-eslint` des deux côtés ; `npm run typecheck` (tsc) en plus du lint.
 - **Tests** : Jest et Supertest, avec `mongodb-memory-server` comme base isolée.

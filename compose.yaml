@@ -38,8 +38,11 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       MONGODB_URI: ${MONGODB_URI:?définir MONGODB_URI dans .env}
+      # Nombre de reverse proxies devant l'API (vide en local : X-Forwarded-For est ignoré)
+      TRUST_PROXY: ${TRUST_PROXY:-}
     ports:
-      - "3000:3000"
+      # Uniquement depuis la machine : l'API de développement n'est pas exposée au réseau (Wi-Fi de l'école…)
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules
@@ -56,7 +59,8 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "100"
     ports:
-      - "5173:5173"
+      # Uniquement depuis la machine, comme l'API
+      - "127.0.0.1:5173:5173"
     volumes:
       - ./frontend:/app
       - frontend-node-modules:/app/node_modules

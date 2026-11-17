@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../utils/jwt'
 import { UnauthorizedError, ForbiddenError } from '../utils/errors'
+import { securityLog } from '../utils/securityLog'
 import { User } from '../../models/user.model'
 import type { UserRole } from '../../constants/roles'
 
@@ -15,7 +16,11 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   let userId: string
   try {
     userId = verifyToken(token).sub
-  } catch {
+  } catch (err) {
+    // Un jeton expiré est normal ; une signature fausse ou un format inattendu mérite d'être tracé.
+    if (!(err instanceof Error && err.name === 'TokenExpiredError')) {
+      securityLog('auth_rejected', req, { reason: err instanceof Error ? err.message : 'inconnu' })
+    }
     throw new UnauthorizedError('Jeton d’authentification invalide ou expiré')
   }
 
@@ -35,6 +40,7 @@ export function requireRole(...allowedRoles: UserRole[]) {
       throw new UnauthorizedError('Authentification requise')
     }
     if (!allowedRoles.includes(req.user.role)) {
+      securityLog('forbidden', req, { userId: req.user.id })
       throw new ForbiddenError('Action réservée aux administrateurs')
     }
     next()

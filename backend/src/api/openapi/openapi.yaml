@@ -118,6 +118,10 @@ components:
       $ref: './components/responses.yaml#/NotFound'
     Conflict:
       $ref: './components/responses.yaml#/Conflict'
+    PayloadTooLarge:
+      $ref: './components/responses.yaml#/PayloadTooLarge'
+    TooManyRequests:
+      $ref: './components/responses.yaml#/TooManyRequests'
 
   schemas:
     # Shared

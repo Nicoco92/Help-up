@@ -149,4 +149,5 @@ Comptes de démo (mot de passe `password123`) :
 - [Contrat de l'API](backend/src/api/openapi/README.md) (OpenAPI 3, dossier `backend/src/api/openapi/` : une ressource par fichier) : servi en interface Swagger sur http://localhost:3000/api/docs et en JSON sur `/api/docs/openapi.json`. Le bouton « Authorize » permet de coller un JWT pour tester les routes protégées. Les routes pas encore codées sont marquées « à implémenter » (`x-status: todo`).
 - [Plan de développement](docs/plan-features.md) : répartition des features, contrat d'API, dépendances et diagramme de Gantt.
 - [Modèle de données](docs/modele-donnees.md) : User, Mission, Application, Review (champs, contraintes, index, cycle de vie, scripts).
+- [Sécurité](docs/securite.md) : audit OWASP de bout en bout (modèle de menace, constats et corrections, risques acceptés, recommandations de déploiement), vérifié par `npm test -- security`.
 - [Charte graphique](docs/charte-graphique.md) : couleurs (clair et sombre), typographie, composants, carte, ton éditorial et variables CSS.

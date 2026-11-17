@@ -14,6 +14,8 @@ import reviewRoutes from './routes/reviews.routes'
 import userReviewRoutes from './routes/userReviews.routes'
 import notificationRoutes from './routes/notifications.routes'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
+import { apiLimiter } from './middlewares/rateLimit.middleware'
+import { noStore } from './middlewares/security.middleware'
 import { loadOpenApi } from './utils/openapi'
 
 // Contrat OpenAPI : src/api/openapi/ (copié dans dist/api/openapi au build)
@@ -21,10 +23,19 @@ const openapi = loadOpenApi(path.join(__dirname, 'openapi', 'openapi.yaml'))
 
 const app = express()
 
+// Derrière un reverse proxy (production), TRUST_PROXY=1 permet de lire la vraie IP du client
+// (limitation de débit, journal de sécurité). En local, aucune confiance dans X-Forwarded-For.
+app.set('trust proxy', process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : false)
+// Paramètres d'URL toujours de simples chaînes : ?status[$ne]=x ne devient jamais un objet Mongo
+app.set('query parser', 'simple')
+
+// En-têtes de sécurité (CSP, HSTS, nosniff, frame-ancestors, Referrer-Policy…) ; X-Powered-By retiré
 app.use(helmet())
-// L'authentification passe par l'en-tête Authorization (pas de cookie) : pas besoin de credentials.
-// Sans CORS_ORIGIN, on n'autorise que le front Vite local.
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }))
+// L'authentification passe par l'en-tête Authorization (pas de cookie) : pas de credentials,
+// donc pas de CSRF possible. Une liste d'origines peut être donnée, séparées par des virgules.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((o) => o.trim())
+app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PATCH', 'DELETE'], maxAge: 600 }))
+app.use('/api', apiLimiter)
 app.use(express.json({ limit: '100kb' }))
 
 app.get('/api/health', (_req, res) => {
@@ -36,6 +47,9 @@ app.get('/api/docs/openapi.json', (_req, res) => {
   res.status(200).json(openapi)
 })
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { swaggerOptions: { showExtensions: true } }))
+
+// Aucune mise en cache des réponses métier (la documentation, elle, peut l'être)
+app.use(['/api/auth', '/api/users', '/api/explore', '/api/missions', '/api/applications', '/api/dashboard', '/api/reviews', '/api/notifications'], noStore)
 
 app.use('/api/auth', authRoutes)
 // Avant userRoutes : /api/users/:id/reviews ne passe pas deux fois par requireAuth

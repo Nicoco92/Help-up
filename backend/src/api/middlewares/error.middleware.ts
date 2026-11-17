@@ -45,6 +45,18 @@ export function errorHandler(
     return sendError(res, 400, 'INVALID_INPUT', 'JSON malformé')
   }
 
+  // Autres erreurs de lecture du corps : trop volumineux (413), encodage non pris en charge (415)…
+  // Sans ce cas, elles finissaient en 500.
+  if (typeof err === 'object' && err !== null && 'type' in err && 'status' in err) {
+    const { status } = err as { status: number }
+    if (status === 413) {
+      return sendError(res, 413, 'PAYLOAD_TOO_LARGE', 'Requête trop volumineuse (100 ko maximum)')
+    }
+    if (status >= 400 && status < 500) {
+      return sendError(res, status, 'INVALID_INPUT', 'Corps de requête illisible')
+    }
+  }
+
   if (typeof err === 'object' && err !== null) {
     const { name, code, keyPattern } = err as { name?: string; code?: number; keyPattern?: Record<string, unknown> }
     if (name === 'CastError') {
