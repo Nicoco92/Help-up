@@ -247,15 +247,15 @@ function MemberHome({ user }: { user: User }) {
             <p>Parcours les profils et les compétences de ton quartier.</p>
           </Link>
 
-          <div className="card quick quick--disabled">
+          <Link to="/missions" className="card card--interactive quick">
             <span className="step__icon" style={{ marginBottom: 0 }} aria-hidden="true">
               <Briefcase size={22} />
             </span>
             <h3>
-              Missions <span className="badge badge--neutral">Bientôt</span>
+              Explore les missions <ArrowRight size={18} aria-hidden="true" />
             </h3>
-            <p>Publier une mission et postuler arrive très prochainement.</p>
-          </div>
+            <p>Liste ou carte : trouve un coup de main à donner près de chez toi.</p>
+          </Link>
         </div>
       </div>
     </div>

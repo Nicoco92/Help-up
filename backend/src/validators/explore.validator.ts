@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { CATEGORY_SLUGS } from '../constants/categories'
-import { ExploreError } from '../utils/ExploreError'
+import { BadRequestError } from '../utils/errors'
 
 const rewardAmount = z
   .string()
@@ -37,7 +37,7 @@ export type ExploreQuery = z.infer<typeof exploreQuerySchema>
 export function parseExploreQuery(input: unknown): ExploreQuery {
   const result = exploreQuerySchema.safeParse(input)
   if (!result.success) {
-    throw new ExploreError(400, 'INVALID_INPUT', 'Les filtres de recherche sont invalides.')
+    throw new BadRequestError('Les filtres de recherche sont invalides.')
   }
   return result.data
 }

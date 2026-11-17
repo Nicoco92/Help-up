@@ -6,6 +6,7 @@ import type {
   User,
   UserRole,
 } from '../types/auth'
+import type { Mission, MissionListResponse } from '../types/mission'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -55,7 +56,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   let response: Response
   try {
     response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers })
-  } catch {
+  } catch (cause) {
+    // Requête annulée (démontage du composant) : on laisse passer l'AbortError, ce n'est pas une panne réseau.
+    if (cause instanceof DOMException && cause.name === 'AbortError') throw cause
     throw new ApiError(
       0,
       'NETWORK_ERROR',
@@ -101,4 +104,12 @@ export const usersApi = {
   getById: (id: string) => request<PublicUser>(`/users/${encodeURIComponent(id)}`),
   updateRole: (id: string, role: UserRole) =>
     request<User>(`/users/${encodeURIComponent(id)}/role`, json('PATCH', { role })),
+}
+
+// Recherche des missions ouvertes des autres membres (JWT obligatoire côté API).
+export const exploreApi = {
+  list: (query: string, signal?: AbortSignal) =>
+    request<MissionListResponse>(`/explore/missions${query ? `?${query}` : ''}`, { signal }),
+  getById: (id: string, signal?: AbortSignal) =>
+    request<Mission>(`/explore/missions/${encodeURIComponent(id)}`, { signal }),
 }
