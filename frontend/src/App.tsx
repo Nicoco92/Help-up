@@ -13,6 +13,7 @@ import { AdminPage } from './pages/AdminPage'
 import { ExplorePage } from './pages/ExplorePage'
 import { MissionDetailPage } from './pages/MissionDetailPage'
 import { MyApplicationsPage } from './pages/MyApplicationsPage'
+import { DashboardPage } from './pages/DashboardPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="missions" element={<ExplorePage />} />
             <Route path="missions/:id" element={<MissionDetailPage />} />
             <Route path="applications" element={<MyApplicationsPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="users" element={<UsersListPage />} />
             <Route path="users/:id" element={<UserProfilePage />} />

@@ -8,6 +8,7 @@ import type {
 } from '../types/auth'
 import type { Mission, MissionListResponse } from '../types/mission'
 import type { Application } from '../types/application'
+import type { Dashboard } from '../types/dashboard'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -136,4 +137,11 @@ export const applicationsApi = {
       `/missions/${encodeURIComponent(missionId)}/applications/${encodeURIComponent(applicationId)}/reject`,
       { method: 'POST' },
     ),
+}
+
+// Tableau de bord et clôture d'une de mes missions (assigned → completed).
+export const dashboardApi = {
+  get: () => request<Dashboard>('/dashboard'),
+  completeMission: (missionId: string) =>
+    request<Mission>(`/missions/${encodeURIComponent(missionId)}/complete`, { method: 'POST' }),
 }
