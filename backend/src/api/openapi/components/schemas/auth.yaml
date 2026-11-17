@@ -1,0 +1,40 @@
+# Authentication schemas (backend/src/api/validators/auth.validator.ts)
+RegisterInput:
+  type: object
+  additionalProperties: false
+  required: [email, password, firstName, lastName]
+  properties:
+    email: { type: string, format: email, maxLength: 254, description: Case-insensitive (stored in lowercase) }
+    password: { type: string, format: password, minLength: 8, maxLength: 72 }
+    firstName: { type: string, minLength: 1, maxLength: 50 }
+    lastName: { type: string, minLength: 1, maxLength: 50 }
+    phone: { type: string, pattern: '^0[1-9][0-9]{8}$', example: '0612345678' }
+    city: { type: string, maxLength: 80 }
+    bio: { type: string, maxLength: 500 }
+    skills:
+      type: array
+      maxItems: 8
+      items: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+  example:
+    email: alice.martin@helpup.test
+    password: password123
+    firstName: Alice
+    lastName: Martin
+
+LoginInput:
+  type: object
+  additionalProperties: false
+  required: [email, password]
+  properties:
+    email: { type: string, format: email }
+    password: { type: string, format: password }
+  example:
+    email: alice.martin@helpup.test
+    password: password123
+
+AuthResponse:
+  type: object
+  required: [user, token]
+  properties:
+    user: { $ref: '../../openapi.yaml#/components/schemas/User' }
+    token: { type: string, description: 'JWT `{ sub: userId }` signed with JWT_SECRET' }

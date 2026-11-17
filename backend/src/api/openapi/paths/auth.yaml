@@ -1,0 +1,51 @@
+# /api/auth: Nicolas (backend/src/api/routes/auth.routes.ts)
+register:
+  post:
+    tags: [Auth]
+    summary: Creates an account and returns a JWT
+    description: |
+      This is the **Create** of the users CRUD. The account is always created with the `client` role
+      (sending `role` → `400`). The password is stored as a bcrypt hash.
+    operationId: register
+    x-status: implemented
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/RegisterInput' }
+    responses:
+      '201':
+        description: Account created
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/AuthResponse' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '409':
+        description: Email already in use (`EMAIL_ALREADY_USED`)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+            example: { error: { code: EMAIL_ALREADY_USED, message: Cet email est déjà utilisé } }
+
+login:
+  post:
+    tags: [Auth]
+    summary: Logs in and returns a JWT
+    description: On failure, `401` without telling whether the email or the password is wrong.
+    operationId: login
+    x-status: implemented
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/LoginInput' }
+    responses:
+      '200':
+        description: Logged in
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/AuthResponse' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }

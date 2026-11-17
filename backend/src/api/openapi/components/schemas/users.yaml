@@ -1,0 +1,86 @@
+# User schemas (backend/src/models/user.model.ts, backend/src/api/validators/user.validator.ts)
+
+# Full view: the member themself, or an administrator.
+User:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    email: { type: string, format: email }
+    firstName: { type: string }
+    lastName: { type: string }
+    phone: { type: string }
+    city: { type: string }
+    bio: { type: string }
+    skills:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    role: { $ref: '../../openapi.yaml#/components/schemas/UserRole' }
+    avatarUrl: { type: string, format: uri }
+    createdAt: { type: string, format: date-time }
+    updatedAt: { type: string, format: date-time }
+
+# What a member sees of another member: no email, no phone, last name reduced to its initial.
+PublicUser:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    firstName: { type: string, example: Thomas }
+    lastName: { type: string, example: D. }
+    city: { type: string }
+    bio: { type: string }
+    skills:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    avatarUrl: { type: string, format: uri }
+    createdAt: { type: string, format: date-time }
+
+# Partial PATCH of my profile. An empty string on an optional field clears it.
+# email, role, id, password… are rejected (400).
+UserUpdate:
+  type: object
+  additionalProperties: false
+  minProperties: 1
+  properties:
+    firstName: { type: string, minLength: 1, maxLength: 50 }
+    lastName: { type: string, minLength: 1, maxLength: 50 }
+    phone: { type: string, pattern: '^(0[1-9][0-9]{8})?$', description: '"" to clear' }
+    city: { type: string, maxLength: 80, description: '"" to clear' }
+    bio: { type: string, maxLength: 500, description: '"" to clear' }
+    skills:
+      type: array
+      maxItems: 8
+      items: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    avatarUrl: { type: string, maxLength: 500, pattern: '^(https://.*)?$', description: '"" to clear' }
+  example:
+    city: Villejuif
+    skills: [jardinage, bricolage]
+
+RoleUpdate:
+  type: object
+  additionalProperties: false
+  required: [role]
+  properties:
+    role: { $ref: '../../openapi.yaml#/components/schemas/UserRole' }
+
+UserList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      description: Public profiles (full profiles for an administrator)
+      items:
+        oneOf:
+          - $ref: '../../openapi.yaml#/components/schemas/PublicUser'
+          - $ref: '../../openapi.yaml#/components/schemas/User'
+
+# Minimal public identity shown in applications, reviews and the dashboard
+# (backend/src/api/utils/publicPerson.ts): first name, last-name initial, city.
+PublicPerson:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    firstName: { type: string }
+    lastName: { type: string, description: Initial only, example: D. }
+    city: { type: string }
+    avatarUrl: { type: string }

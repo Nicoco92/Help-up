@@ -1,0 +1,86 @@
+# Review schemas (backend/src/models/review.model.ts, backend/src/api/validators/review.validator.ts)
+
+Review:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    missionId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    authorId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      readOnly: true
+      description: Taken from the JWT
+    targetId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      readOnly: true
+      description: The other participant of the mission, deduced by the server
+    rating: { type: integer, minimum: 1, maximum: 5 }
+    comment: { type: string, maxLength: 500 }
+    createdAt: { type: string, format: date-time, readOnly: true }
+    updatedAt: { type: string, format: date-time, readOnly: true }
+    mission:
+      type: object
+      nullable: true
+      properties:
+        id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+        title: { type: string }
+        category: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+
+# POST body. authorId and targetId are set by the server: sending them → 400.
+ReviewInput:
+  type: object
+  required: [missionId, rating]
+  additionalProperties: false
+  properties:
+    missionId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    rating: { type: integer, minimum: 1, maximum: 5, example: 5 }
+    comment: { type: string, maxLength: 500, example: Ponctuel et très soigneux. }
+
+# PATCH body: rating and/or comment, at least one.
+ReviewUpdate:
+  type: object
+  minProperties: 1
+  additionalProperties: false
+  properties:
+    rating: { type: integer, minimum: 1, maximum: 5 }
+    comment: { type: string, maxLength: 500, description: An empty string clears the comment }
+
+ReviewWithTarget:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/Review'
+    - type: object
+      properties:
+        target:
+          allOf: [{ $ref: '../../openapi.yaml#/components/schemas/PublicPerson' }]
+          nullable: true
+
+ReviewWithAuthor:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/Review'
+    - type: object
+      properties:
+        author:
+          allOf: [{ $ref: '../../openapi.yaml#/components/schemas/PublicPerson' }]
+          nullable: true
+
+ReviewWithTargetList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/ReviewWithTarget' }
+
+# Reviews received by a member, with their average rating
+UserReviews:
+  type: object
+  required: [items, summary]
+  properties:
+    items:
+      type: array
+      description: The 50 latest reviews received
+      items: { $ref: '../../openapi.yaml#/components/schemas/ReviewWithAuthor' }
+    summary:
+      type: object
+      properties:
+        average: { type: number, nullable: true, example: 4.5, description: null when no review }
+        count: { type: integer, example: 2 }

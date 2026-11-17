@@ -1,0 +1,36 @@
+# Reusable error responses. Referenced as '../openapi.yaml#/components/responses/<Name>'.
+# Error messages are returned in French: the frontend displays them as is.
+InvalidInput:
+  description: Invalid data, unknown field, `id`/`ownerId` in the body, or malformed id
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: INVALID_INPUT, message: Le titre doit contenir au moins 5 caractères } }
+
+Unauthorized:
+  description: Missing, invalid or expired token
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: UNAUTHORIZED, message: Authentification requise ou invalide } }
+
+Forbidden:
+  description: Action restricted to administrators
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: FORBIDDEN, message: Action réservée aux administrateurs } }
+
+NotFound:
+  description: Missing object, or object owned by another user (same response in both cases)
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: NOT_FOUND, message: Mission introuvable } }
+
+Conflict:
+  description: Duplicate (email, application or review already sent) or incompatible state (mission no longer `open`, ongoing mission…)
+  content:
+    application/json:
+      schema: { $ref: '../openapi.yaml#/components/schemas/Error' }
+      example: { error: { code: CONFLICT, message: Seule une mission ouverte peut être modifiée } }

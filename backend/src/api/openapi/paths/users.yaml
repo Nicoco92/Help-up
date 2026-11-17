@@ -1,0 +1,135 @@
+# /api/users: Nicolas (backend/src/api/routes/user.routes.ts)
+# Create = POST /api/auth/register (paths/auth.yaml).
+
+users:
+  get:
+    tags: [Users]
+    summary: Lists members
+    description: |
+      Public profiles of members (administrators are not listed).
+      An administrator gets the full profiles of every account.
+    operationId: listUsers
+    x-status: implemented
+    responses:
+      '200':
+        description: List (`{"items":[]}` when empty)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/UserList' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+me:
+  get:
+    tags: [Users]
+    summary: Reads my full profile
+    operationId: getMe
+    x-status: implemented
+    responses:
+      '200':
+        description: My profile
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/User' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+  patch:
+    tags: [Users]
+    summary: Updates my profile (partial)
+    description: '`email`, `role`, `password`, `id`… are rejected (`400`). An empty string clears an optional field.'
+    operationId: updateMe
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/UserUpdate' }
+    responses:
+      '200':
+        description: Profile updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/User' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+  delete:
+    tags: [Users]
+    summary: Deletes my account
+    description: |
+      Permanently deletes the account of the token. Server-side rules:
+      - rejected (`409`) while I have an `assigned` mission (as owner or provider): finish or cancel it first;
+      - my `open` missions and their applications are deleted, my `pending` applications become `withdrawn`;
+      - `completed` and `cancelled` missions are kept for the other participant's history.
+    operationId: deleteMe
+    x-status: implemented
+    responses:
+      '204': { description: Account deleted (no body) }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+
+user-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Users]
+    summary: Reads a member's profile
+    description: |
+      Public profile for another member; full profile for oneself or for an administrator.
+      An administrator account returns `404` to other members.
+    operationId: getUserById
+    x-status: implemented
+    responses:
+      '200':
+        description: Profile
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '../openapi.yaml#/components/schemas/PublicUser'
+                - $ref: '../openapi.yaml#/components/schemas/User'
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  delete:
+    tags: [Users]
+    summary: Deletes an account (administrator)
+    description: |
+      Restricted to the `admin` role (`requireRole('admin')`). Same rules as `DELETE /api/users/me`.
+      An administrator cannot delete their own account through this route (`400`).
+    operationId: deleteUser
+    x-status: implemented
+    responses:
+      '204': { description: Account deleted (no body) }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: '../openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+
+user-role:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  patch:
+    tags: [Users]
+    summary: Changes an account's role (administrator)
+    description: Restricted to the `admin` role. An administrator cannot change their own role (`400`).
+    operationId: updateUserRole
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/RoleUpdate' }
+    responses:
+      '200':
+        description: Role updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/User' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: '../openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }

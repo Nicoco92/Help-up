@@ -1,6 +1,6 @@
 import { Schema, model, type InferSchemaType } from 'mongoose';
 import { APPLICATION_STATUSES } from '../constants/statuses';
-import { toJSON } from '../utils/toJSON';
+import { toJSON } from './plugins/toJSON';
 
 // Candidature d'un utilisateur à une mission (voir docs/modele-donnees.md)
 const applicationSchema = new Schema(

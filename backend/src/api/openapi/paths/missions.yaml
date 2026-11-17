@@ -1,0 +1,106 @@
+# /api/missions: Nicolas (backend/src/api/routes/missions.routes.ts)
+# Owner-scoped: only the missions I own (ownerId = JWT). Another member's mission returns 404, like a missing mission.
+# A member creates, updates and hides their missions; only an administrator deletes them.
+
+missions:
+  get:
+    tags: [Missions]
+    summary: Lists my published missions
+    description: Sorted from newest to oldest (`owner_recent` index).
+    operationId: listMyMissions
+    x-status: implemented
+    parameters:
+      - name: status
+        in: query
+        required: false
+        description: Optional status filter (unknown value → `400`)
+        schema: { $ref: '../openapi.yaml#/components/schemas/MissionStatus' }
+    responses:
+      '200':
+        description: My missions (`{"items":[]}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/MissionList' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+  post:
+    tags: [Missions]
+    summary: Publishes a mission
+    description: |
+      The server sets `ownerId` (JWT), `status: open`, `providerId: null` and computes `location` from `quartier`.
+      Sending any of these fields, `id` or an unknown field → `400`. `scheduledAt` must be in the future.
+    operationId: createMission
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/MissionCreate' }
+    responses:
+      '201':
+        description: Mission created
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Mission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+mission-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Missions]
+    summary: Reads one of my missions
+    operationId: getMyMission
+    x-status: implemented
+    responses:
+      '200':
+        description: The mission
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Mission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  patch:
+    tags: [Missions]
+    summary: Updates one of my missions (partial)
+    description: |
+      Partial, non-empty PATCH. Only while the mission is `open` (otherwise `409 CONFLICT`).
+      If `quartier` changes, the server recomputes `location`.
+      Members cannot delete their missions: they hide them with `{"hidden": true}` (and show them again with `false`).
+    operationId: updateMyMission
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/MissionUpdate' }
+    responses:
+      '200':
+        description: Mission updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Mission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+
+  delete:
+    tags: [Missions]
+    summary: Deletes a mission (administrator)
+    description: |
+      Moderation, restricted to the `admin` role: deletes any member's mission, whatever its status.
+      Its applications are deleted with it. A regular member gets `403` (they hide their mission instead).
+    operationId: deleteMission
+    x-status: implemented
+    responses:
+      '204': { description: Mission deleted (no body) }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '403': { $ref: '../openapi.yaml#/components/responses/Forbidden' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }

@@ -1,0 +1,97 @@
+# Application schemas (backend/src/models/application.model.ts, backend/src/api/validators/application.validator.ts)
+
+Application:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    missionId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    applicantId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      readOnly: true
+    message: { type: string, minLength: 10, maxLength: 500 }
+    status:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ApplicationStatus' }]
+      readOnly: true
+    createdAt: { type: string, format: date-time, readOnly: true }
+    updatedAt: { type: string, format: date-time, readOnly: true }
+
+# POST body. applicantId and status are set by the server: sending them → 400.
+ApplicationInput:
+  type: object
+  required: [missionId, message]
+  additionalProperties: false
+  properties:
+    missionId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    message: { type: string, minLength: 10, maxLength: 500, example: Bonjour, je suis disponible samedi matin. }
+
+# PATCH body: only the message can change, while the application is pending.
+ApplicationUpdate:
+  type: object
+  required: [message]
+  additionalProperties: false
+  properties:
+    message: { type: string, minLength: 10, maxLength: 500 }
+
+# What an application or the dashboard returns of a mission
+MissionSummary:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    ownerId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    providerId:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      nullable: true
+    title: { type: string }
+    status: { $ref: '../../openapi.yaml#/components/schemas/MissionStatus' }
+    rewardCents: { type: integer }
+    estimatedMinutes: { type: integer }
+    category: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+    categoryLabel: { type: string }
+    quartier: { $ref: '../../openapi.yaml#/components/schemas/QuartierSlug' }
+    quartierLabel: { type: string }
+    scheduledAt: { type: string, format: date-time }
+    urgent: { type: boolean }
+
+ApplicationWithMission:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/Application'
+    - type: object
+      properties:
+        mission:
+          allOf: [{ $ref: '../../openapi.yaml#/components/schemas/MissionSummary' }]
+          nullable: true
+
+# What the mission owner sees of an applicant: no email, no phone, last name reduced to its initial.
+ApplicationWithApplicant:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/Application'
+    - type: object
+      properties:
+        applicant:
+          type: object
+          nullable: true
+          properties:
+            id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+            firstName: { type: string }
+            lastName: { type: string, description: Initial only, example: D. }
+            city: { type: string }
+            avatarUrl: { type: string }
+            skills:
+              type: array
+              items: { $ref: '../../openapi.yaml#/components/schemas/CategorySlug' }
+
+ApplicationWithMissionList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/ApplicationWithMission' }
+
+ApplicationWithApplicantList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/ApplicationWithApplicant' }

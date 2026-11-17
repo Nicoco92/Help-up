@@ -1,8 +1,8 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose, { Types } from 'mongoose'
 import request from 'supertest'
-import app from '../src/app'
-import { signToken } from '../src/utils/jwt'
+import app from '../src/api/app'
+import { signToken } from '../src/api/utils/jwt'
 
 const jwtSecret = 'explore-test-secret'
 let mongoServer: MongoMemoryServer

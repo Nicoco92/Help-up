@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { List, Map, RotateCcw, Search, ChevronDown } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
+import { ClipboardList, List, Map, Plus, RotateCcw, Search, ChevronDown } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ApiError, exploreApi } from '../services/api'
 import { Button } from '../components/Button'
 import { MissionCard } from '../components/MissionCard'
@@ -269,6 +269,20 @@ export function ExplorePage() {
           <p className="eyebrow">Le bon coup de main, tout près de chez vous</p>
           <h1>Une mission vous attend.</h1>
           <p>Découvrez les petits services proposés par vos voisins et trouvez celui qui vous correspond.</p>
+          <div className="intro-actions">
+            <Link className="button button--primary button--md" to="/missions/new">
+              <span className="button__icon">
+                <Plus size={18} aria-hidden="true" />
+              </span>
+              <span className="button__label">Publier une mission</span>
+            </Link>
+            <Link className="button button--secondary button--md" to="/missions/mine">
+              <span className="button__icon">
+                <ClipboardList size={18} aria-hidden="true" />
+              </span>
+              <span className="button__label">Mes missions</span>
+            </Link>
+          </div>
         </div>
         <div className="intro-art" aria-hidden="true">
           <span className="art-sun" />

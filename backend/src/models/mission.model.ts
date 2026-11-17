@@ -2,8 +2,8 @@ import { Schema, model, type InferSchemaType } from 'mongoose';
 import { CATEGORY_SLUGS } from '../constants/categories';
 import { QUARTIER_SLUGS } from '../constants/quartiers';
 import { MISSION_STATUSES } from '../constants/statuses';
-import { toJSON } from '../utils/toJSON';
-import { missionEvents } from '../utils/missionEvents';
+import { toJSON } from './plugins/toJSON';
+import { missionEvents } from './events/missionEvents';
 
 // Mission publiée par un utilisateur (voir docs/modele-donnees.md)
 const missionSchema = new Schema(
@@ -26,7 +26,10 @@ const missionSchema = new Schema(
         category: { type: String, enum: CATEGORY_SLUGS, required: true },
         scheduledAt: { type: Date, required: true },
         quartier: { type: String, enum: QUARTIER_SLUGS, required: true },
-        urgent: { type: Boolean, default: false }
+        urgent: { type: Boolean, default: false },
+        // Masquée par son propriétaire : absente du catalogue (/api/explore), toujours visible dans « Mes missions ».
+        // Un membre ne supprime pas ses missions, il les masque ; seul un administrateur supprime.
+        hidden: { type: Boolean, default: false }
     },
     { timestamps: true, versionKey: false }
 );

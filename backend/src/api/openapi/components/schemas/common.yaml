@@ -1,0 +1,56 @@
+# Shared schemas. The lists copy backend/src/constants/: keep them in sync.
+Error:
+  type: object
+  required: [error]
+  properties:
+    error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_INPUT, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, EMAIL_ALREADY_USED, CONFLICT, INTERNAL_ERROR]
+        message: { type: string, description: Human-readable message (in French) }
+
+ObjectId:
+  type: string
+  pattern: '^[a-fA-F0-9]{24}$'
+  example: 6650f0c2a1b2c3d4e5f60789
+
+# backend/src/constants/categories.ts
+CategorySlug:
+  type: string
+  enum: [bricolage, informatique, soutien-scolaire, courses, demenagement, animaux, jardinage, garde-enfants]
+  example: jardinage
+
+# backend/src/constants/quartiers.ts
+QuartierSlug:
+  type: string
+  description: Neighbourhood, chosen from a fixed list
+  enum:
+    - paris-13-butte-aux-cailles
+    - paris-13-place-d-italie
+    - paris-13-bibliotheque
+    - paris-14-denfert
+    - paris-14-alesia
+    - paris-15-convention
+    - paris-15-beaugrenelle
+    - kremlin-bicetre
+    - ivry-centre
+    - villejuif-centre
+    - villejuif-paul-vaillant-couturier
+  example: villejuif-centre
+
+# backend/src/constants/statuses.ts
+MissionStatus:
+  type: string
+  enum: [open, assigned, completed, cancelled]
+
+ApplicationStatus:
+  type: string
+  enum: [pending, accepted, rejected, withdrawn]
+
+# backend/src/constants/roles.ts
+UserRole:
+  type: string
+  enum: [client, admin]

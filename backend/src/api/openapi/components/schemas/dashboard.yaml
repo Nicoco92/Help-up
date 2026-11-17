@@ -1,0 +1,54 @@
+# Dashboard schemas (backend/src/api/services/dashboard.service.ts)
+
+CompletedMission:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/MissionSummary'
+    - type: object
+      properties:
+        completedAt: { type: string, format: date-time }
+
+DashboardMission:
+  allOf:
+    - $ref: '../../openapi.yaml#/components/schemas/MissionSummary'
+    - type: object
+      properties:
+        completedAt: { type: string, format: date-time, nullable: true }
+        role: { type: string, enum: [owner, provider], description: owner = I published it, provider = I carry it out }
+        pendingApplications: { type: integer }
+        totalApplications: { type: integer }
+        counterpart:
+          allOf: [{ $ref: '../../openapi.yaml#/components/schemas/PublicPerson' }]
+          nullable: true
+          description: The selected provider (my missions) or the client (obtained missions)
+        myReview:
+          type: object
+          nullable: true
+          description: Completed missions only — my review of the other participant (null = not rated yet)
+          properties:
+            id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+            rating: { type: integer, minimum: 1, maximum: 5 }
+            comment: { type: string }
+
+Dashboard:
+  type: object
+  properties:
+    stats:
+      type: object
+      properties:
+        openMissions: { type: integer }
+        pendingApplications: { type: integer }
+        obtainedMissions: { type: integer }
+        completedMissions: { type: integer }
+        earnedCents: { type: integer, description: Total earned as a provider, in cents }
+    published:
+      type: array
+      description: My ongoing published missions (open or assigned)
+      items: { $ref: '../../openapi.yaml#/components/schemas/DashboardMission' }
+    obtained:
+      type: array
+      description: Missions assigned to me as a provider
+      items: { $ref: '../../openapi.yaml#/components/schemas/DashboardMission' }
+    history:
+      type: array
+      description: Completed missions, as owner or provider
+      items: { $ref: '../../openapi.yaml#/components/schemas/DashboardMission' }

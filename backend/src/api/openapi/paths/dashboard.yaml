@@ -1,0 +1,41 @@
+# /api/dashboard and /api/missions/{id}/complete: Romain
+# (backend/src/api/routes/dashboard.routes.ts, backend/src/api/routes/missionApplications.routes.ts)
+
+mission-complete:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  post:
+    tags: [Missions]
+    summary: Marks one of my assigned missions as completed
+    description: |
+      `assigned` → `completed`, with `completedAt`. An open or already completed mission → `400`;
+      another member's mission → `404`. The provider receives a `mission_completed` notification.
+    operationId: completeMission
+    x-status: implemented
+    responses:
+      '200':
+        description: Mission completed
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/CompletedMission' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+dashboard:
+  get:
+    tags: [Dashboard]
+    summary: Dashboard of the logged-in member
+    description: |
+      Ongoing published missions (with their application counts), obtained missions,
+      history of completed missions and statistics.
+    operationId: getDashboard
+    x-status: implemented
+    responses:
+      '200':
+        description: The dashboard
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Dashboard' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }

@@ -6,7 +6,14 @@ import type {
   User,
   UserRole,
 } from '../types/auth'
-import type { Mission, MissionListResponse } from '../types/mission'
+import type {
+  Mission,
+  MissionListResponse,
+  MissionPayload,
+  MissionStatus,
+  MissionUpdatePayload,
+  MyMission,
+} from '../types/mission'
 import type { Application } from '../types/application'
 import type { Dashboard } from '../types/dashboard'
 import type { Review, ReviewPayload, UserReviews } from '../types/review'
@@ -108,6 +115,22 @@ export const usersApi = {
   getById: (id: string) => request<PublicUser>(`/users/${encodeURIComponent(id)}`),
   updateRole: (id: string, role: UserRole) =>
     request<User>(`/users/${encodeURIComponent(id)}/role`, json('PATCH', { role })),
+}
+
+// Mes missions publiées (cloisonnées côté API par le JWT). Un membre crée, modifie et masque ;
+// seul un administrateur supprime (l'API répond 403 aux autres).
+export const missionsApi = {
+  listMine: (status?: MissionStatus, signal?: AbortSignal) =>
+    request<{ items: MyMission[] }>(`/missions${status ? `?status=${status}` : ''}`, { signal }),
+  get: (id: string, signal?: AbortSignal) =>
+    request<MyMission>(`/missions/${encodeURIComponent(id)}`, { signal }),
+  create: (payload: MissionPayload) => request<MyMission>('/missions', json('POST', payload)),
+  update: (id: string, payload: MissionUpdatePayload) =>
+    request<MyMission>(`/missions/${encodeURIComponent(id)}`, json('PATCH', payload)),
+  setHidden: (id: string, hidden: boolean) =>
+    request<MyMission>(`/missions/${encodeURIComponent(id)}`, json('PATCH', { hidden })),
+  remove: (id: string) =>
+    request<void>(`/missions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 }
 
 // Recherche des missions ouvertes des autres membres (JWT obligatoire côté API).

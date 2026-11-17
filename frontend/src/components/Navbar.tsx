@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ChevronDown, Compass, FileText, LayoutDashboard, LogOut, Menu, Shield, User as UserIcon, Users, X } from 'lucide-react'
+import { ChevronDown, ClipboardList, Compass, FileText, LayoutDashboard, LogOut, Menu, Shield, User as UserIcon, Users, X } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Logo } from './Logo'
 import { Avatar } from './Avatar'
@@ -113,9 +113,13 @@ export function Navbar() {
             className={`navbar__links${mobileOpen ? ' is-open' : ''}`}
             aria-label="Navigation principale"
           >
-            <NavLink to="/missions" className={linkClass}>
+            <NavLink to="/missions" end className={linkClass}>
               <Compass size={18} aria-hidden="true" />
               Missions
+            </NavLink>
+            <NavLink to="/missions/mine" className={linkClass}>
+              <ClipboardList size={18} aria-hidden="true" />
+              Mes missions
             </NavLink>
             <NavLink to="/dashboard" className={linkClass}>
               <LayoutDashboard size={18} aria-hidden="true" />

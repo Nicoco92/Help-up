@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '../src/app';
+import app from '../src/api/app';
 import { Mission } from '../src/models/mission.model';
 import { Application } from '../src/models/application.model';
 import { connectTestDb, clearTestDb, closeTestDb } from './setup';
@@ -149,6 +149,15 @@ describe('/api/applications', () => {
 
         const list = await request(app).get('/api/applications').set(auth(bob.token));
         expect(list.body.items).toHaveLength(0);
+    });
+
+    test('mission masquée par son propriétaire (hidden) : traitée comme absente → 404', async () => {
+        await Mission.updateOne({ _id: missionId }, { hidden: true });
+        const res = await request(app).post('/api/applications').set(auth(alice.token))
+            .send({ missionId, message: MESSAGE });
+        expect(res.status).toBe(404);
+        expect(res.body.error.code).toBe('NOT_FOUND');
+        expect(await Application.countDocuments({ missionId })).toBe(0);
     });
 
     test('règles métier : sa propre mission, mission fermée, absente, doublon', async () => {

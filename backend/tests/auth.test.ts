@@ -1,5 +1,5 @@
 import request from 'supertest'
-import app from '../src/app'
+import app from '../src/api/app'
 import { connectTestDb, clearTestDb, closeTestDb } from './setup'
 import { User } from '../src/models/user.model'
 

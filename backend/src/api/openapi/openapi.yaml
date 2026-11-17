@@ -1,0 +1,225 @@
+# HelpUP API contract (OpenAPI 3), served as Swagger UI on /api/docs.
+# This is the entry point: it only holds metadata and $refs to paths/*.yaml
+# (one resource per file) and components/*.yaml. Conventions: README.md (same folder).
+openapi: 3.0.3
+info:
+  title: HelpUP API
+  version: 1.0.0
+  description: |
+    Paid mini-jobs between neighbours.
+
+    - Every route starts with `/api` and exchanges UTF-8 JSON.
+    - Business routes require `Authorization: Bearer <JWT>` (use the "Authorize" button).
+    - Every error has the shape `{"error":{"code","message"}}`.
+    - Responses expose `id`, never `_id`, `passwordHash` or any secret.
+    - An `id` or `ownerId` in a POST/PATCH body, an unknown field or an empty PATCH → `400`.
+
+    Operations marked **"not implemented yet"** (`x-status: todo`) are the contract to follow:
+    they are not coded in the backend yet and currently return `404`.
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Health
+  - name: Auth
+    description: Sign-up (= user creation) and login. Public routes.
+  - name: Users
+    description: |
+      Users CRUD. Creation goes through `POST /api/auth/register` (it also returns the JWT).
+      A member sees the public profile of others (no email, phone number or full last name).
+  - name: Missions
+    description: |
+      **My** published missions (owner-scoped). `ownerId` comes from the JWT; another user's
+      mission returns `404`. Members create, update and hide their missions; only an administrator
+      deletes them. The catalogue of other members' missions is `/api/explore/missions`.
+  - name: Explore
+  - name: Applications
+  - name: Dashboard
+  - name: Reviews
+  - name: Notifications
+
+paths:
+  /api/health:
+    $ref: './paths/health.yaml#/health'
+
+  /api/auth/register:
+    $ref: './paths/auth.yaml#/register'
+  /api/auth/login:
+    $ref: './paths/auth.yaml#/login'
+
+  /api/users:
+    $ref: './paths/users.yaml#/users'
+  /api/users/me:
+    $ref: './paths/users.yaml#/me'
+  /api/users/{id}:
+    $ref: './paths/users.yaml#/user-by-id'
+  /api/users/{id}/role:
+    $ref: './paths/users.yaml#/user-role'
+
+  /api/missions:
+    $ref: './paths/missions.yaml#/missions'
+  /api/missions/{id}:
+    $ref: './paths/missions.yaml#/mission-by-id'
+
+  /api/missions/{id}/complete:
+    $ref: './paths/dashboard.yaml#/mission-complete'
+  /api/missions/{id}/applications:
+    $ref: './paths/applications.yaml#/mission-applications'
+  /api/missions/{id}/applications/{applicationId}/accept:
+    $ref: './paths/applications.yaml#/mission-application-accept'
+  /api/missions/{id}/applications/{applicationId}/reject:
+    $ref: './paths/applications.yaml#/mission-application-reject'
+
+  /api/applications:
+    $ref: './paths/applications.yaml#/applications'
+  /api/applications/{id}:
+    $ref: './paths/applications.yaml#/application-by-id'
+
+  /api/dashboard:
+    $ref: './paths/dashboard.yaml#/dashboard'
+
+  /api/reviews:
+    $ref: './paths/reviews.yaml#/reviews'
+  /api/reviews/{id}:
+    $ref: './paths/reviews.yaml#/review-by-id'
+  /api/users/{id}/reviews:
+    $ref: './paths/reviews.yaml#/user-reviews'
+
+  /api/notifications:
+    $ref: './paths/notifications.yaml#/notifications'
+  /api/notifications/unread-count:
+    $ref: './paths/notifications.yaml#/unread-count'
+  /api/notifications/read-all:
+    $ref: './paths/notifications.yaml#/read-all'
+  /api/notifications/{id}:
+    $ref: './paths/notifications.yaml#/notification-by-id'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      $ref: './components/parameters.yaml#/IdPath'
+    ApplicationIdPath:
+      $ref: './components/parameters.yaml#/ApplicationIdPath'
+
+  responses:
+    InvalidInput:
+      $ref: './components/responses.yaml#/InvalidInput'
+    Unauthorized:
+      $ref: './components/responses.yaml#/Unauthorized'
+    Forbidden:
+      $ref: './components/responses.yaml#/Forbidden'
+    NotFound:
+      $ref: './components/responses.yaml#/NotFound'
+    Conflict:
+      $ref: './components/responses.yaml#/Conflict'
+
+  schemas:
+    # Shared
+    Error:
+      $ref: './components/schemas/common.yaml#/Error'
+    ObjectId:
+      $ref: './components/schemas/common.yaml#/ObjectId'
+    CategorySlug:
+      $ref: './components/schemas/common.yaml#/CategorySlug'
+    QuartierSlug:
+      $ref: './components/schemas/common.yaml#/QuartierSlug'
+    MissionStatus:
+      $ref: './components/schemas/common.yaml#/MissionStatus'
+    ApplicationStatus:
+      $ref: './components/schemas/common.yaml#/ApplicationStatus'
+    UserRole:
+      $ref: './components/schemas/common.yaml#/UserRole'
+
+    # Auth
+    RegisterInput:
+      $ref: './components/schemas/auth.yaml#/RegisterInput'
+    LoginInput:
+      $ref: './components/schemas/auth.yaml#/LoginInput'
+    AuthResponse:
+      $ref: './components/schemas/auth.yaml#/AuthResponse'
+
+    # Users
+    User:
+      $ref: './components/schemas/users.yaml#/User'
+    PublicUser:
+      $ref: './components/schemas/users.yaml#/PublicUser'
+    PublicPerson:
+      $ref: './components/schemas/users.yaml#/PublicPerson'
+    UserUpdate:
+      $ref: './components/schemas/users.yaml#/UserUpdate'
+    RoleUpdate:
+      $ref: './components/schemas/users.yaml#/RoleUpdate'
+    UserList:
+      $ref: './components/schemas/users.yaml#/UserList'
+
+    # Missions
+    Mission:
+      $ref: './components/schemas/missions.yaml#/Mission'
+    MissionCreate:
+      $ref: './components/schemas/missions.yaml#/MissionCreate'
+    MissionUpdate:
+      $ref: './components/schemas/missions.yaml#/MissionUpdate'
+    MissionList:
+      $ref: './components/schemas/missions.yaml#/MissionList'
+
+    # Applications
+    Application:
+      $ref: './components/schemas/applications.yaml#/Application'
+    ApplicationInput:
+      $ref: './components/schemas/applications.yaml#/ApplicationInput'
+    ApplicationUpdate:
+      $ref: './components/schemas/applications.yaml#/ApplicationUpdate'
+    MissionSummary:
+      $ref: './components/schemas/applications.yaml#/MissionSummary'
+    ApplicationWithMission:
+      $ref: './components/schemas/applications.yaml#/ApplicationWithMission'
+    ApplicationWithApplicant:
+      $ref: './components/schemas/applications.yaml#/ApplicationWithApplicant'
+    ApplicationWithMissionList:
+      $ref: './components/schemas/applications.yaml#/ApplicationWithMissionList'
+    ApplicationWithApplicantList:
+      $ref: './components/schemas/applications.yaml#/ApplicationWithApplicantList'
+
+    # Dashboard
+    CompletedMission:
+      $ref: './components/schemas/dashboard.yaml#/CompletedMission'
+    DashboardMission:
+      $ref: './components/schemas/dashboard.yaml#/DashboardMission'
+    Dashboard:
+      $ref: './components/schemas/dashboard.yaml#/Dashboard'
+
+    # Reviews
+    Review:
+      $ref: './components/schemas/reviews.yaml#/Review'
+    ReviewInput:
+      $ref: './components/schemas/reviews.yaml#/ReviewInput'
+    ReviewUpdate:
+      $ref: './components/schemas/reviews.yaml#/ReviewUpdate'
+    ReviewWithTarget:
+      $ref: './components/schemas/reviews.yaml#/ReviewWithTarget'
+    ReviewWithAuthor:
+      $ref: './components/schemas/reviews.yaml#/ReviewWithAuthor'
+    ReviewWithTargetList:
+      $ref: './components/schemas/reviews.yaml#/ReviewWithTargetList'
+    UserReviews:
+      $ref: './components/schemas/reviews.yaml#/UserReviews'
+
+    # Notifications
+    NotificationType:
+      $ref: './components/schemas/notifications.yaml#/NotificationType'
+    Notification:
+      $ref: './components/schemas/notifications.yaml#/Notification'
+    NotificationUpdate:
+      $ref: './components/schemas/notifications.yaml#/NotificationUpdate'
+    NotificationList:
+      $ref: './components/schemas/notifications.yaml#/NotificationList'
+
+# Every route requires the JWT by default (set `security: []` on a public route)
+security:
+  - bearerAuth: []

@@ -1,6 +1,6 @@
 import { Schema, model, type InferSchemaType } from 'mongoose';
 import { NOTIFICATION_TYPES } from '../constants/notifications';
-import { toJSON } from '../utils/toJSON';
+import { toJSON } from './plugins/toJSON';
 
 // Notification envoyée à un membre par le serveur (jamais créée par le client)
 const notificationSchema = new Schema(

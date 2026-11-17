@@ -1,0 +1,112 @@
+# /api/reviews and /api/users/{id}/reviews: Romain
+# (backend/src/api/routes/reviews.routes.ts, backend/src/api/routes/userReviews.routes.ts)
+# Author-scoped: only the reviews I wrote (authorId = JWT). Another member's review returns 404.
+
+reviews:
+  get:
+    tags: [Reviews]
+    summary: Lists the reviews I wrote
+    description: Sorted from newest to oldest.
+    operationId: listMyReviews
+    x-status: implemented
+    responses:
+      '200':
+        description: My reviews (`{"items":[]}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ReviewWithTargetList' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+  post:
+    tags: [Reviews]
+    summary: Rates the other participant of a completed mission
+    description: |
+      I must be the client or the provider of the mission (`404` otherwise), it must be `completed` (`400`),
+      one review per mission (`409 CONFLICT`). `authorId` comes from the JWT and `targetId` is deduced
+      from the mission: sending them → `400`. The target receives a `review_received` notification.
+    operationId: createReview
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/ReviewInput' }
+    responses:
+      '201':
+        description: Review created
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ReviewWithTarget' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+
+review-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Reviews]
+    summary: Reads one of my reviews
+    operationId: getMyReview
+    x-status: implemented
+    responses:
+      '200':
+        description: The review
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ReviewWithTarget' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  patch:
+    tags: [Reviews]
+    summary: Updates the rating or the comment of one of my reviews
+    operationId: updateMyReview
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/ReviewUpdate' }
+    responses:
+      '200':
+        description: Review updated
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ReviewWithTarget' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  delete:
+    tags: [Reviews]
+    summary: Deletes one of my reviews
+    operationId: deleteMyReview
+    x-status: implemented
+    responses:
+      '204': { description: Review deleted }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+user-reviews:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Reviews]
+    summary: Reviews received by a member and their average rating
+    operationId: listUserReviews
+    x-status: implemented
+    responses:
+      '200':
+        description: The 50 latest reviews received and the average rating (`null` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/UserReviews' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
