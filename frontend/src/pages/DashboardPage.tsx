@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, CheckCircle2, ChevronDown, ClipboardList, Compass, History, MapPin, Pencil, Star, Users } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronDown, ClipboardList, Compass, History, MapPin, MessageCircle, Pencil, Star, Users } from 'lucide-react';
 import { dashboardApi } from '../services/api';
 import type { Dashboard, DashboardMission } from '../types/dashboard';
 import { useAuth } from '../hooks/useAuth';
@@ -28,6 +28,18 @@ function MissionFacts({ mission }: { mission: DashboardMission }) {
             </span>
             <strong className="application-card__price">{formatReward(mission.rewardCents)}</strong>
         </div>
+    );
+}
+
+// Conversation privée avec l'autre participant (ouverte dès que la candidature est acceptée)
+function ContactLink({ mission, label }: { mission: DashboardMission; label?: string }) {
+    if (!mission.counterpart) return null;
+    return (
+        <Link to={`/messages/${mission.id}`} className="btn btn--secondary btn--sm">
+            <MessageCircle size={16} aria-hidden="true" />
+            {label ?? `Écrire à ${mission.counterpart.firstName}`}
+            <span className="visually-hidden"> à propos de {mission.title}</span>
+        </Link>
     );
 }
 
@@ -78,10 +90,13 @@ function PublishedCard({ mission, onChange }: { mission: DashboardMission; onCha
                                 </button>
                             </>
                         ) : (
-                            <button type="button" className="btn btn--primary btn--sm" onClick={() => setConfirming(true)}>
-                                <CheckCircle2 size={16} aria-hidden="true" />
-                                Marquer comme terminée
-                            </button>
+                            <>
+                                <ContactLink mission={mission} />
+                                <button type="button" className="btn btn--primary btn--sm" onClick={() => setConfirming(true)}>
+                                    <CheckCircle2 size={16} aria-hidden="true" />
+                                    Marquer comme terminée
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -120,6 +135,9 @@ function ObtainedCard({ mission }: { mission: DashboardMission }) {
                 Pour <strong>{mission.counterpart ? `${mission.counterpart.firstName} ${mission.counterpart.lastName}` : 'un membre'}</strong>
                 {' '}· {mission.estimatedMinutes} minutes estimées. Le client marquera la mission comme terminée.
             </p>
+            <div className="application-card__actions">
+                <ContactLink mission={mission} />
+            </div>
         </article>
     );
 }
@@ -154,6 +172,7 @@ function HistoryRow({ mission, onChange }: { mission: DashboardMission; onChange
                                     Noter {mission.counterpart.firstName}
                                 </button>
                             )}
+                            <ContactLink mission={mission} label="Voir la conversation" />
                         </div>
                     )}
                 </div>

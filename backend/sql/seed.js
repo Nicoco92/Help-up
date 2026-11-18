@@ -30,7 +30,7 @@
   const MISSION_STATUSES = ['open', 'assigned', 'completed', 'cancelled']
   const APPLICATION_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn']
   const NOTIFICATION_TYPES = ['mission_nearby', 'application_received', 'application_accepted', 'application_rejected',
-    'mission_completed', 'review_received']
+    'mission_completed', 'review_received', 'message_received']
 
   const str = (min, max, extra = {}) => ({ bsonType: 'string', minLength: min, maxLength: max, ...extra })
   const num = (min, max) => ({ bsonType: ['int', 'long', 'double'], minimum: min, maximum: max })
@@ -154,6 +154,25 @@
         { key: { userId: 1, createdAt: -1 }, name: 'user_recent' },
         { key: { userId: 1, readAt: 1 }, name: 'user_unread' },
         { key: { createdAt: 1 }, name: 'expire_after_90_days', expireAfterSeconds: 90 * 24 * 3600 },
+      ],
+    },
+
+    messages: {
+      schema: {
+        required: ['missionId', 'senderId', 'recipientId', 'body'],
+        properties: {
+          missionId: id,
+          senderId: id,
+          recipientId: id,
+          body: str(1, 2000),
+          readAt: { bsonType: ['date', 'null'] },
+          createdAt: date,
+          updatedAt: date,
+        },
+      },
+      indexes: [
+        { key: { missionId: 1, createdAt: 1 }, name: 'mission_thread' },
+        { key: { recipientId: 1, readAt: 1 }, name: 'recipient_unread' },
       ],
     },
   }

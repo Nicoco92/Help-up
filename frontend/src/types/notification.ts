@@ -4,7 +4,8 @@ export type NotificationType =
     | 'application_accepted'
     | 'application_rejected'
     | 'mission_completed'
-    | 'review_received';
+    | 'review_received'
+    | 'message_received';
 
 // Notification créée par le serveur ; link = page du front à ouvrir
 export interface AppNotification {

@@ -18,6 +18,7 @@ import type { Application } from '../types/application'
 import type { Dashboard } from '../types/dashboard'
 import type { Review, ReviewPayload, UserReviews } from '../types/review'
 import type { AppNotification, NotificationList } from '../types/notification'
+import type { Conversation, Message } from '../types/message'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const TOKEN_KEY = 'helpup.token'
@@ -195,4 +196,23 @@ export const notificationsApi = {
   markAllRead: () => request<{ updated: number }>('/notifications/read-all', { method: 'POST' }),
   remove: (id: string) =>
     request<void>(`/notifications/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+}
+
+// Émis après avoir lu ou envoyé un message, pour mettre à jour la pastille « Messages ».
+export const MESSAGES_CHANGED_EVENT = 'helpup:messages-changed'
+
+// Messagerie privée : une conversation par mission attribuée (l'identifiant est celui de la mission).
+export const messagesApi = {
+  conversations: () => request<{ items: Conversation[] }>('/conversations'),
+  unreadCount: () => request<{ count: number }>('/conversations/unread-count'),
+  conversation: (id: string, signal?: AbortSignal) =>
+    request<Conversation>(`/conversations/${encodeURIComponent(id)}`, { signal }),
+  // after = id du dernier message affiché : seulement les nouveaux
+  messages: (id: string, after?: string, signal?: AbortSignal) =>
+    request<{ items: Message[] }>(
+      `/conversations/${encodeURIComponent(id)}/messages${after ? `?after=${encodeURIComponent(after)}` : ''}`,
+      { signal },
+    ),
+  send: (id: string, body: string) =>
+    request<Message>(`/conversations/${encodeURIComponent(id)}/messages`, json('POST', { body })),
 }

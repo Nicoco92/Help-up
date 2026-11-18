@@ -1,0 +1,235 @@
+/* Messagerie privée : pastille de la barre de navigation, liste des conversations, fil de messages
+   (charte : docs/charte-graphique.md). L'orange signale le « non lu » : toujours en fond, jamais en texte sur fond clair. */
+
+/* --- Pastille « Messages » dans la barre de navigation --- */
+.nav-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: var(--radius-pill);
+    background: var(--color-signal);
+    color: var(--color-on-signal);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* --- Liste des conversations --- */
+.conversation-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+}
+
+.conversation-list li {
+    border-bottom: 1px solid var(--color-separator);
+}
+
+.conversation-list li:last-child {
+    border-bottom: 0;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--target-min);
+    padding: var(--space-4) var(--space-5);
+    color: var(--color-label);
+    text-decoration: none;
+}
+
+.conversation-item:hover {
+    background: var(--color-surface-tinted);
+}
+
+.conversation-item--unread {
+    background: var(--color-surface-tinted);
+}
+
+.conversation-item__body {
+    display: grid;
+    flex: 1;
+    gap: 2px;
+    min-width: 0;
+}
+
+.conversation-item__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.conversation-item__top time,
+.conversation-item__mission {
+    font-size: var(--text-footnote);
+    color: var(--color-label-secondary);
+}
+
+.conversation-item__top time {
+    flex-shrink: 0;
+}
+
+.conversation-item__preview {
+    overflow: hidden;
+    color: var(--color-label-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.conversation-item--unread .conversation-item__preview {
+    color: var(--color-label);
+    font-weight: 600;
+}
+
+.conversation-item__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+/* --- Page d'une conversation --- */
+.conversation-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.conversation-header h1 {
+    font-size: var(--text-title-2);
+    line-height: 1.2;
+}
+
+.conversation-header p {
+    color: var(--color-label-secondary);
+}
+
+.conversation-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: var(--target-min);
+    margin-bottom: var(--space-2);
+    color: var(--color-tint);
+    font-weight: 600;
+}
+
+.conversation {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+}
+
+/* Le fil défile seul : l'en-tête de la page et le formulaire restent visibles */
+.message-thread {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-height: min(60vh, 560px);
+    min-height: 240px;
+    margin: 0;
+    padding: var(--space-5);
+    overflow-y: auto;
+    list-style: none;
+}
+
+.message-thread__empty {
+    margin: auto;
+    color: var(--color-label-secondary);
+    text-align: center;
+}
+
+.message-day {
+    align-self: center;
+    margin: var(--space-3) 0 var(--space-1);
+    font-size: var(--text-footnote);
+    font-weight: 600;
+    color: var(--color-label-secondary);
+}
+
+.message {
+    display: grid;
+    gap: 2px;
+    max-width: min(80%, 520px);
+    align-self: flex-start;
+}
+
+.message--mine {
+    align-self: flex-end;
+    justify-items: end;
+}
+
+.message__bubble {
+    padding: var(--space-2) var(--space-4);
+    border-radius: 18px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-separator);
+    color: var(--color-label);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.message--mine .message__bubble {
+    border-color: var(--color-tint);
+    background: var(--color-tint);
+    color: var(--color-on-tint);
+}
+
+.message__meta {
+    font-size: var(--text-caption);
+    color: var(--color-label-secondary);
+}
+
+/* --- Saisie --- */
+.message-form {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid var(--color-separator);
+    background: var(--color-surface);
+}
+
+.message-form__row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+}
+
+.message-form .textarea {
+    flex: 1;
+    min-height: var(--target-min);
+    max-height: 160px;
+    resize: vertical;
+}
+
+.message-form__hint {
+    font-size: var(--text-footnote);
+    color: var(--color-label-secondary);
+}
+
+.message-readonly {
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid var(--color-separator);
+    color: var(--color-label-secondary);
+}
+
+@media (max-width: 600px) {
+    .message-thread {
+        max-height: 55vh;
+        padding: var(--space-4);
+    }
+
+    .message {
+        max-width: 90%;
+    }
+
+    .message-form__row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

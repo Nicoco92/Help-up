@@ -13,6 +13,7 @@ import dashboardRoutes from './routes/dashboard.routes'
 import reviewRoutes from './routes/reviews.routes'
 import userReviewRoutes from './routes/userReviews.routes'
 import notificationRoutes from './routes/notifications.routes'
+import conversationRoutes from './routes/conversations.routes'
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware'
 import { apiLimiter } from './middlewares/rateLimit.middleware'
 import { noStore } from './middlewares/security.middleware'
@@ -49,7 +50,7 @@ app.get('/api/docs/openapi.json', (_req, res) => {
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { swaggerOptions: { showExtensions: true } }))
 
 // Aucune mise en cache des réponses métier (la documentation, elle, peut l'être)
-app.use(['/api/auth', '/api/users', '/api/explore', '/api/missions', '/api/applications', '/api/dashboard', '/api/reviews', '/api/notifications'], noStore)
+app.use(['/api/auth', '/api/users', '/api/explore', '/api/missions', '/api/applications', '/api/dashboard', '/api/reviews', '/api/notifications', '/api/conversations'], noStore)
 
 app.use('/api/auth', authRoutes)
 // Avant userRoutes : /api/users/:id/reviews ne passe pas deux fois par requireAuth
@@ -63,6 +64,7 @@ app.use('/api/applications', applicationRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/reviews', reviewRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/conversations', conversationRoutes)
 
 app.use('/api', notFoundHandler)
 app.use(errorHandler)

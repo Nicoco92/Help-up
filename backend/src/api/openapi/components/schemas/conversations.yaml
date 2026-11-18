@@ -1,0 +1,55 @@
+# Private messaging schemas (backend/src/models/message.model.ts, backend/src/api/validators/message.validator.ts)
+
+Message:
+  type: object
+  properties:
+    id: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    missionId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    senderId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    recipientId: { $ref: '../../openapi.yaml#/components/schemas/ObjectId' }
+    body: { type: string, example: Bonjour, je serai là à 14 h avec la perceuse. }
+    mine: { type: boolean, description: '`true` when I sent it' }
+    read: { type: boolean, description: Read by its recipient }
+    readAt: { type: string, format: date-time, nullable: true }
+    createdAt: { type: string, format: date-time }
+
+# POST body: only the text. senderId, recipientId and missionId are set by the server (in the body → 400).
+MessageInput:
+  type: object
+  required: [body]
+  additionalProperties: false
+  properties:
+    body: { type: string, minLength: 1, maxLength: 2000, example: Bonjour, je serai là à 14 h. }
+
+MessageList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/Message' }
+
+Conversation:
+  type: object
+  properties:
+    id:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/ObjectId' }]
+      description: Same as the mission id
+    mission: { $ref: '../../openapi.yaml#/components/schemas/MissionSummary' }
+    role: { type: string, enum: [owner, provider], description: My role in the mission }
+    counterpart:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/PublicPerson' }]
+      nullable: true
+    canWrite: { type: boolean, description: '`false` once the mission is no longer `assigned` (read only)' }
+    lastMessage:
+      allOf: [{ $ref: '../../openapi.yaml#/components/schemas/Message' }]
+      nullable: true
+    unreadCount: { type: integer, example: 1 }
+
+ConversationList:
+  type: object
+  required: [items]
+  properties:
+    items:
+      type: array
+      items: { $ref: '../../openapi.yaml#/components/schemas/Conversation' }

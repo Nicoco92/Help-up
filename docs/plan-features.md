@@ -56,7 +56,7 @@ Objectif : que chacun avance **sans attendre les autres** dès la fin de la prem
 
 ### Bonus — uniquement après le gel du J3 midi
 
-Dans cet ordre : **Favoris** (Yaël, petit) → **Avis** (Romain) → **Notifications** (Romain) → **Messagerie** (Nicolas, le plus gros : probablement à abandonner).
+Dans cet ordre : **Favoris** (Yaël, petit) → **Avis** (Romain) → **Notifications** (Romain) → **Messagerie** (Nicolas, faite : `/api/conversations`, une conversation par mission attribuée, pages `/messages` et `/messages/:id`).
 
 ---
 

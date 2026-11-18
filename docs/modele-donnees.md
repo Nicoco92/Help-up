@@ -36,6 +36,9 @@ erDiagram
     MISSION ||--o{ REVIEW : "donne lieu à (missionId)"
     USER ||--o{ REVIEW : "écrit (authorId)"
     USER ||--o{ REVIEW : "reçoit (targetId)"
+    MISSION ||--o{ MESSAGE : "conversation (missionId)"
+    USER ||--o{ MESSAGE : "envoie (senderId)"
+    USER ||--o{ MESSAGE : "reçoit (recipientId)"
 
     USER {
         ObjectId id PK
@@ -82,6 +85,15 @@ erDiagram
         ObjectId targetId FK
         int rating "1 à 5"
         string comment "facultatif"
+        date createdAt
+    }
+    MESSAGE {
+        ObjectId id PK
+        ObjectId missionId FK
+        ObjectId senderId FK
+        ObjectId recipientId FK
+        string body "1 à 2000 car."
+        date readAt "null = non lu"
         date createdAt
     }
 ```
@@ -173,7 +185,7 @@ erDiagram
 | Champ | Type | Oblig. | Contraintes | Fixé par |
 |---|---|---|---|---|
 | `userId` | ObjectId → User | oui | destinataire | **serveur** |
-| `type` | String | oui | `mission_nearby` · `application_received` · `application_accepted` · `application_rejected` · `mission_completed` · `review_received` | **serveur** |
+| `type` | String | oui | `mission_nearby` · `application_received` · `application_accepted` · `application_rejected` · `mission_completed` · `review_received` · `message_received` | **serveur** |
 | `message` | String | oui | 1 à 300 car., texte prêt à afficher | **serveur** |
 | `link` | String | oui | chemin du front (`/dashboard`, `/missions/:id`…) | **serveur** |
 | `missionId` | ObjectId → Mission | non | mission concernée | **serveur** |
@@ -182,6 +194,22 @@ erDiagram
 - Jamais créée par le client : seuls les services l'envoient (candidature, acceptation, refus, clôture, avis).
 - `mission_nearby` : à la création d'une mission, les membres de la **même ville** que le quartier et qui ont la **compétence** demandée (100 au plus).
 - Supprimée automatiquement après 90 jours (index TTL).
+- `message_received` : une seule tant que le destinataire n'a pas lu la conversation (pas une par message) ; le lien ouvre `/messages/:missionId`.
+
+## Message (`messages`)
+
+Messagerie privée entre le client et le prestataire d'une mission. **La conversation, c'est la mission** : pas de collection « conversations », ses deux participants sont `ownerId` et `providerId`, fixés quand le client accepte une candidature.
+
+| Champ | Type | Oblig. | Contraintes | Fixé par |
+|---|---|---|---|---|
+| `missionId` | ObjectId → Mission | oui | mission avec un `providerId` (identifiant de la conversation, dans l'URL) | **serveur** (paramètre vérifié) |
+| `senderId` | ObjectId → User | oui | `ownerId` ou `providerId` de la mission | **serveur** (JWT) |
+| `recipientId` | ObjectId → User | oui | **l'autre** participant | **serveur** (déduit de la mission) |
+| `body` | String | oui | 1 à 2000 car., espaces de début et de fin retirés | client |
+| `readAt` | Date | non | `null` = non lu ; rempli quand le destinataire ouvre le fil | **serveur** |
+
+- Lecture : mission `assigned`, `completed` ou `cancelled` ; écriture : mission `assigned` seulement (sinon `409`). Un membre qui n'est pas participant reçoit `404`, comme pour une conversation absente.
+- Supprimés avec la mission (admin) et avec le compte de l'expéditeur ou du destinataire.
 
 ---
 
@@ -203,6 +231,8 @@ erDiagram
 | `notifications` | `{ userId: 1, createdAt: -1 }` | Mes notifications |
 | `notifications` | `{ userId: 1, readAt: 1 }` | Compteur de non lues |
 | `notifications` | `{ createdAt: 1 }` TTL 90 j | Purge automatique |
+| `messages` | `{ missionId: 1, createdAt: 1 }` | Fil d'une conversation, dernier message |
+| `messages` | `{ recipientId: 1, readAt: 1 }` | Compteur de messages non lus |
 
 ## Listes de référence
 

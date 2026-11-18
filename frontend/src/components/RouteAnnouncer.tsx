@@ -11,6 +11,8 @@ const TITLES: [RegExp, string][] = [
     [/^\/applications$/, 'Mes candidatures'],
     [/^\/dashboard$/, 'Tableau de bord'],
     [/^\/notifications$/, 'Notifications'],
+    [/^\/messages$/, 'Messages'],
+    [/^\/messages\/[^/]+$/, 'Conversation'],
     [/^\/profile$/, 'Mon profil'],
     [/^\/users$/, 'Membres'],
     [/^\/users\/[^/]+$/, 'Profil d’un membre'],

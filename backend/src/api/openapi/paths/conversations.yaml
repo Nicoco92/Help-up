@@ -1,0 +1,107 @@
+# /api/conversations: Nicolas (backend/src/api/routes/conversations.routes.ts)
+# Private messages between the client (ownerId) and the provider (providerId) of a mission.
+# A conversation exists once the client has accepted an application; its id is the mission id.
+# - Mission `assigned`: read and write.
+# - Mission `completed` or `cancelled`: read only (writing → `409`).
+# - No provider yet, or not a participant → `404` (same response as a missing conversation).
+
+conversations:
+  get:
+    tags: [Conversations]
+    summary: Lists my conversations, most recently active first
+    operationId: listMyConversations
+    x-status: implemented
+    responses:
+      '200':
+        description: My conversations (`{"items":[]}` when none)
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/ConversationList' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+unread-count:
+  get:
+    tags: [Conversations]
+    summary: Counts the messages sent to me that I have not read yet (navbar badge)
+    operationId: getUnreadMessageCount
+    x-status: implemented
+    responses:
+      '200':
+        description: The counter
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count: { type: integer, example: 3 }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+
+conversation-by-id:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Conversations]
+    summary: Reads one of my conversations (mission, other participant, can I still write)
+    operationId: getMyConversation
+    x-status: implemented
+    responses:
+      '200':
+        description: The conversation
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Conversation' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+conversation-messages:
+  parameters:
+    - $ref: '../openapi.yaml#/components/parameters/IdPath'
+
+  get:
+    tags: [Conversations]
+    summary: Lists the messages of a conversation (oldest first) and marks those sent to me as read
+    operationId: listConversationMessages
+    x-status: implemented
+    parameters:
+      - name: after
+        in: query
+        required: false
+        description: Id of the last message already displayed; only newer messages are returned (malformed → `400`)
+        schema: { $ref: '../openapi.yaml#/components/schemas/ObjectId' }
+    responses:
+      '200':
+        description: The 200 latest messages, or the messages after `after`
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/MessageList' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+
+  post:
+    tags: [Conversations]
+    summary: Sends a message to the other participant (mission `assigned` only)
+    description: |
+      The sender comes from the JWT and the recipient is the other participant of the mission.
+      The recipient gets a `message_received` notification, only one until they read the conversation.
+      Limited to 30 messages per minute and per IP.
+    operationId: sendMessage
+    x-status: implemented
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../openapi.yaml#/components/schemas/MessageInput' }
+    responses:
+      '201':
+        description: Message sent
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/Message' }
+      '400': { $ref: '../openapi.yaml#/components/responses/InvalidInput' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
+      '404': { $ref: '../openapi.yaml#/components/responses/NotFound' }
+      '409': { $ref: '../openapi.yaml#/components/responses/Conflict' }
+      '429': { $ref: '../openapi.yaml#/components/responses/TooManyRequests' }

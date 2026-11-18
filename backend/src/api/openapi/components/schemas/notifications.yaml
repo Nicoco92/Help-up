@@ -3,7 +3,7 @@
 # backend/src/constants/notifications.ts
 NotificationType:
   type: string
-  enum: [mission_nearby, application_received, application_accepted, application_rejected, mission_completed, review_received]
+  enum: [mission_nearby, application_received, application_accepted, application_rejected, mission_completed, review_received, message_received]
 
 Notification:
   type: object
