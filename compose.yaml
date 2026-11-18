@@ -1,7 +1,17 @@
 name: helpup
 
-# Les secrets viennent du fichier .env à la racine (non versionné, voir .env.example).
-# La syntaxe ${VAR:?msg} fait échouer le démarrage si une variable manque.
+# PRODUCTION (fichier par défaut de docker compose) :
+#   docker compose up -d --build
+# Pour développer : docker compose -f compose.dev.yaml up -d
+# Seul prérequis : le .env à la racine (voir .env.example).
+# Même nom de projet que le dev : le volume helpup_mongo-data (la base) est partagé entre les deux.
+#
+# Différences avec le dev :
+#   - images construites (Dockerfile), plus de code monté ni de npm install au démarrage ;
+#   - backend : NODE_ENV=production, `node dist/server.js` (JWT_SECRET < 32 caractères = refus de démarrer) ;
+#   - frontend : build Vite servi par nginx, qui relaie aussi /api vers le backend (même origine) ;
+#   - seul nginx est publié (127.0.0.1:5173, cible du tunnel Cloudflare) ; Mongo et l'API ne le sont pas ;
+#   - pas de mongo-express.
 
 services:
   mongo:
@@ -13,77 +23,54 @@ services:
       MONGO_APP_DB: ${MONGO_APP_DB:-helpup}
       MONGO_APP_USER: ${MONGO_APP_USER:?définir MONGO_APP_USER dans .env}
       MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?définir MONGO_APP_PASSWORD dans .env}
-    ports:
-      # Uniquement depuis la machine (pour Compass/mongosh), pas depuis le réseau.
-      # En production : supprimer ce bloc, seul le backend a besoin d'y accéder.
-      - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
       - ./mongo/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test:
-        ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
-      interval: 5s
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
       timeout: 5s
       retries: 10
 
   backend:
-    image: node:22-slim
-    working_dir: /app
-    command: sh -c "npm install && npm run dev"
-    # Liste explicite : le backend ne reçoit que ses variables, jamais le mot de passe root de Mongo.
+    build: ./backend
+    image: helpup-backend:prod
+    restart: unless-stopped
     environment:
+      NODE_ENV: production
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:?définir JWT_SECRET dans .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
-      MONGODB_URI: ${MONGODB_URI:?définir MONGODB_URI dans .env}
-      # Nombre de reverse proxies devant l'API (vide en local : X-Forwarded-For est ignoré)
-      TRUST_PROXY: ${TRUST_PROXY:-}
-    ports:
-      # Uniquement depuis la machine : l'API de développement n'est pas exposée au réseau (Wi-Fi de l'école…)
-      - "127.0.0.1:3000:3000"
-    volumes:
-      - ./backend:/app
-      - backend-node-modules:/app/node_modules
-    #depends_on:
-    #mongo:
-    #condition: service_healthy
-
-  frontend:
-    image: node:22-slim
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
-      CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "100"
-    ports:
-      # Uniquement depuis la machine, comme l'API
-      - "127.0.0.1:5173:5173"
-    volumes:
-      - ./frontend:/app
-      - frontend-node-modules:/app/node_modules
-    depends_on:
-      - backend
-
-  # Outil d'admin, lancé seulement avec : docker compose --profile tools up
-  # Ne jamais le déployer en production.
-  mongo-express:
-    image: mongo-express:1.0.2
-    profiles: ["tools"]
-    ports:
-      - "127.0.0.1:8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/?authSource=admin
-      ME_CONFIG_BASICAUTH_ENABLED: "true"
-      ME_CONFIG_BASICAUTH_USERNAME: ${ME_USER:?définir ME_USER dans .env}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${ME_PASSWORD:?définir ME_PASSWORD dans .env}
+      # Le front est servi sur la même origine que l'API (nginx) : cette liste ne sert qu'aux autres clients
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://helpup.lesfarfadets.net}
+      # Vide dans .env = la base Mongo de ce fichier, avec le compte applicatif
+      MONGODB_URI: ${MONGODB_URI:-mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/${MONGO_APP_DB:-helpup}?authSource=${MONGO_APP_DB:-helpup}}
+      # Un seul proxy de confiance : nginx, qui recopie CF-Connecting-IP dans X-Forwarded-For
+      # (frontend/nginx/default.conf). Lié à cette topologie, donc fixé ici et pas dans .env.
+      TRUST_PROXY: 1
     depends_on:
       mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Même origine que le site : nginx relaie /api (la CSP reste connect-src 'self')
+        VITE_API_URL: /api
+    image: helpup-frontend:prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      backend:
         condition: service_healthy
 
 volumes:
   mongo-data:
-  backend-node-modules:
-  frontend-node-modules:

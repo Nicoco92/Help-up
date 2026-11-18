@@ -1,0 +1,13 @@
+# Installation sur le VPS : voir deploy/install.sh
+[Unit]
+Description=HelpUP : déploie le dernier commit de main
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=debian
+ExecStart=/bin/bash /home/debian/help-up/deploy/update.sh
+# Un build complet (npm ci + vite build) prend quelques minutes sur le VPS
+TimeoutStartSec=20min
+Nice=10
