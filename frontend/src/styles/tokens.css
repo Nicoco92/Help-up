@@ -6,7 +6,7 @@
 
 :root {
   color-scheme: light dark;
-  --color-bg: hsl(51, 30%, 98%);
+  --color-bg: #fbfbf8;
   --color-surface: #ffffff;
   --color-surface-tinted: #d8ebdd;
   --color-label: #242b27;

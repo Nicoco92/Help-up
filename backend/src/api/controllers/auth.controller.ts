@@ -20,6 +20,11 @@ export class AuthController {
       throw err
     }
   }
+
+  async refresh(req: Request, res: Response): Promise<void> {
+    if (!req.userId) throw new UnauthorizedError('Authentification requise')
+    res.status(200).json(authService.refresh(req.userId))
+  }
 }
 
 export const authController = new AuthController()
