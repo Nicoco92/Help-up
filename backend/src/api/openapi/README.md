@@ -22,11 +22,12 @@ backend/src/api/openapi/
 │   ├── applications.yaml     # /api/applications, /api/missions/{id}/applications[/…/accept|reject]
 │   ├── dashboard.yaml        # /api/dashboard, /api/missions/{id}/complete
 │   ├── reviews.yaml          # /api/reviews, /api/users/{id}/reviews
-│   └── notifications.yaml    # /api/notifications[/unread-count|/read-all|/{id}]
+│   ├── notifications.yaml    # /api/notifications[/unread-count|/read-all|/{id}]
+│   └── conversations.yaml    # /api/conversations[/unread-count|/{id}|/{id}/messages] (messagerie privée)
 └── components/
     ├── parameters.yaml       # IdPath, ApplicationIdPath
     ├── responses.yaml        # InvalidInput, Unauthorized, Forbidden, NotFound, Conflict
-    └── schemas/              # common, auth, users, missions, applications, dashboard, reviews, notifications
+    └── schemas/              # common, auth, users, missions, applications, dashboard, reviews, notifications, conversations
 ```
 
 ## Routes
@@ -53,6 +54,8 @@ backend/src/api/openapi/
 | `GET` | `/api/notifications` · `/api/notifications/unread-count` | fait |
 | `POST` | `/api/notifications/read-all` | fait |
 | `GET` `PATCH` `DELETE` | `/api/notifications/{id}` | fait |
+| `GET` | `/api/conversations` · `/api/conversations/unread-count` · `/api/conversations/{id}` | fait |
+| `GET` `POST` | `/api/conversations/{id}/messages` | fait |
 
 Le Create des utilisateurs reste `POST /api/auth/register` : il renvoie aussi le JWT, un
 `POST /api/users` ferait doublon.

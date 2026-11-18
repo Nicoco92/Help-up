@@ -7,6 +7,7 @@ import {
     CheckCircle2,
     FileText,
     MapPin,
+    MessageCircle,
     Star,
     Trash2,
     XCircle,
@@ -16,6 +17,7 @@ import { NOTIFICATIONS_CHANGED_EVENT, notificationsApi } from '../services/api';
 import type { AppNotification, NotificationList, NotificationType } from '../types/notification';
 import { Alert } from '../components/Alert';
 import { EmptyState } from '../components/States';
+import { formatWhen } from '../utils/format';
 import '../styles/applications.css';
 import '../styles/notifications.css';
 
@@ -25,17 +27,8 @@ const ICONS: Record<NotificationType, LucideIcon> = {
     application_accepted: CheckCircle2,
     application_rejected: XCircle,
     mission_completed: CheckCheck,
-    review_received: Star
-};
-
-// Date ISO → « il y a 5 min », « il y a 2 h », « hier », « 12 nov. »
-const formatWhen = (iso: string): string => {
-    const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
-    if (minutes < 1) return 'à l’instant';
-    if (minutes < 60) return `il y a ${minutes} min`;
-    if (minutes < 24 * 60) return `il y a ${Math.floor(minutes / 60)} h`;
-    if (minutes < 48 * 60) return 'hier';
-    return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    review_received: Star,
+    message_received: MessageCircle
 };
 
 const changed = () => window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));

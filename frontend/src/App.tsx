@@ -15,6 +15,8 @@ import { MissionDetailPage } from './pages/MissionDetailPage'
 import { MyApplicationsPage } from './pages/MyApplicationsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { NotificationsPage } from './pages/NotificationsPage'
+import { ConversationsPage } from './pages/ConversationsPage'
+import { ConversationPage } from './pages/ConversationPage'
 import { MyMissionsPage } from './pages/MyMissionsPage'
 import { MissionFormPage } from './pages/MissionFormPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -40,6 +42,8 @@ export default function App() {
             <Route path="applications" element={<MyApplicationsPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="messages" element={<ConversationsPage />} />
+            <Route path="messages/:id" element={<ConversationPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="users" element={<UsersListPage />} />
             <Route path="users/:id" element={<UserProfilePage />} />

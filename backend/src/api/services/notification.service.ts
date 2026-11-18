@@ -157,6 +157,17 @@ export const notify = {
             '/profile',
             mission
         );
+    },
+
+    // Le lien ouvre directement la conversation (l'identifiant de conversation est celui de la mission)
+    async messageReceived(recipientId: Types.ObjectId, mission: MissionRef, sender: PersonRef): Promise<void> {
+        await send(
+            [recipientId],
+            'message_received',
+            `${shortName(sender)} vous a écrit à propos de « ${mission.title} ».`,
+            `/messages/${mission._id.toHexString()}`,
+            mission
+        );
     }
 };
 

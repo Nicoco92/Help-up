@@ -2,6 +2,7 @@ import type { Types } from 'mongoose'
 import { Mission } from '../../models/mission.model'
 import { Application } from '../../models/application.model'
 import { Notification } from '../../models/notification.model'
+import { Message } from '../../models/message.model'
 import { findQuartier, type QuartierSlug } from '../../constants/quartiers'
 import { ConflictError, NotFoundError } from '../utils/errors'
 import { toObjectId } from '../utils/objectId'
@@ -67,9 +68,10 @@ export class MissionService {
     const _id = missionId(id)
     const mission = await Mission.findByIdAndDelete(_id)
     if (!mission) throw notFound()
-    // Les candidatures et notifications d'une mission supprimée n'ont plus de sens.
+    // Les candidatures, notifications et messages d'une mission supprimée n'ont plus de sens.
     await Application.deleteMany({ missionId: _id })
     await Notification.deleteMany({ missionId: _id })
+    await Message.deleteMany({ missionId: _id })
   }
 }
 

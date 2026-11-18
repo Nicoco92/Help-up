@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ChevronDown, ClipboardList, Compass, FileText, LayoutDashboard, LogOut, Menu, Shield, User as UserIcon, Users, X } from 'lucide-react'
+import { ChevronDown, ClipboardList, Compass, FileText, LayoutDashboard, LogOut, Menu, MessageCircle, Shield, User as UserIcon, Users, X } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Logo } from './Logo'
 import { Avatar } from './Avatar'
 import { NotificationBell } from './NotificationBell'
 import { fullName } from '../utils/format'
+import { useUnreadMessages } from '../hooks/useUnreadMessages'
+import '../styles/messages.css'
 
 function AccountMenu() {
   const { user, isAdmin, logout } = useAuth()
@@ -90,6 +92,7 @@ function AccountMenu() {
 export function Navbar() {
   const { isAuthenticated, status } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const unreadMessages = useUnreadMessages(isAuthenticated)
   const location = useLocation()
 
   // Referme le menu mobile à chaque changement de page.
@@ -128,6 +131,21 @@ export function Navbar() {
             <NavLink to="/applications" className={linkClass}>
               <FileText size={18} aria-hidden="true" />
               Candidatures
+            </NavLink>
+            <NavLink to="/messages" className={linkClass}>
+              <MessageCircle size={18} aria-hidden="true" />
+              Messages
+              {unreadMessages > 0 && (
+                <>
+                  {/* Pastille orange = signal « nouveau » de la charte ; le nombre est aussi lu en texte */}
+                  <span className="nav-count" aria-hidden="true">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </span>
+                  <span className="visually-hidden">
+                    , {unreadMessages} non lu{unreadMessages > 1 ? 's' : ''}
+                  </span>
+                </>
+              )}
             </NavLink>
             <NavLink to="/users" className={linkClass}>
               <Users size={18} aria-hidden="true" />

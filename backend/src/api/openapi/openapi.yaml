@@ -37,6 +37,10 @@ tags:
   - name: Dashboard
   - name: Reviews
   - name: Notifications
+  - name: Conversations
+    description: |
+      Private messages between the client and the provider of a mission, once an application
+      has been accepted. The conversation id is the mission id. Read only once the mission is over.
 
 paths:
   /api/health:
@@ -93,6 +97,15 @@ paths:
     $ref: './paths/notifications.yaml#/read-all'
   /api/notifications/{id}:
     $ref: './paths/notifications.yaml#/notification-by-id'
+
+  /api/conversations:
+    $ref: './paths/conversations.yaml#/conversations'
+  /api/conversations/unread-count:
+    $ref: './paths/conversations.yaml#/unread-count'
+  /api/conversations/{id}:
+    $ref: './paths/conversations.yaml#/conversation-by-id'
+  /api/conversations/{id}/messages:
+    $ref: './paths/conversations.yaml#/conversation-messages'
 
 components:
   securitySchemes:
@@ -223,6 +236,18 @@ components:
       $ref: './components/schemas/notifications.yaml#/NotificationUpdate'
     NotificationList:
       $ref: './components/schemas/notifications.yaml#/NotificationList'
+
+    # Conversations (private messages)
+    Message:
+      $ref: './components/schemas/conversations.yaml#/Message'
+    MessageInput:
+      $ref: './components/schemas/conversations.yaml#/MessageInput'
+    MessageList:
+      $ref: './components/schemas/conversations.yaml#/MessageList'
+    Conversation:
+      $ref: './components/schemas/conversations.yaml#/Conversation'
+    ConversationList:
+      $ref: './components/schemas/conversations.yaml#/ConversationList'
 
 # Every route requires the JWT by default (set `security: []` on a public route)
 security:

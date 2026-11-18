@@ -7,6 +7,7 @@ export const NOTIFICATION_TYPES = [
   'application_rejected', // ma candidature est refusée (ou la mission a été confiée à un autre)
   'mission_completed', // le client a clôturé la mission que j'ai réalisée
   'review_received', // on m'a laissé un avis
+  'message_received', // l'autre participant d'une mission m'a écrit
 ] as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number]

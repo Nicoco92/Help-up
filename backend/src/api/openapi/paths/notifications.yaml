@@ -1,6 +1,6 @@
 # /api/notifications: Romain (backend/src/api/routes/notifications.routes.ts)
 # Created by the server only (notification.service): a new mission nearby (same city + skill),
-# an application received, accepted or rejected, a completed mission, a review received.
+# an application received, accepted or rejected, a completed mission, a review received, a private message.
 # Deleted automatically after 90 days. Recipient-scoped: another member's notification returns 404.
 
 notifications:

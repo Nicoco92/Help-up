@@ -34,6 +34,14 @@ export const registerLimiter = rateLimit({
   message: 'Trop de créations de compte depuis cette adresse. Réessaie plus tard.',
 })
 
+// Messagerie : 30 messages par minute et par IP (spam d'un participant, script qui inonde un fil)
+export const messageLimiter = rateLimit({
+  ...common,
+  windowMs: 60 * 1000,
+  limit: 30,
+  message: 'Trop de messages envoyés. Patiente une minute avant d’écrire à nouveau.',
+})
+
 // Toute l'API : 300 requêtes par minute et par IP (la cloche interroge l'API toutes les 30 s)
 export const apiLimiter = rateLimit({
   ...common,

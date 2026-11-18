@@ -3,6 +3,7 @@ import { User, type IUserDocument } from '../../models/user.model'
 import { Mission } from '../../models/mission.model'
 import { Application } from '../../models/application.model'
 import { Notification } from '../../models/notification.model'
+import { Message } from '../../models/message.model'
 import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors'
 import type { UpdateProfileInput } from '../validators/user.validator'
 import type { UserRole } from '../../constants/roles'
@@ -72,6 +73,8 @@ async function deleteAccount(userId: string): Promise<void> {
   await Application.updateMany({ applicantId: userId, status: 'pending' }, { status: 'withdrawn' })
   // Ses notifications, et celles des autres membres qui pointent vers ses missions supprimées
   await Notification.deleteMany({ $or: [{ userId }, { missionId: { $in: openMissionIds } }] })
+  // Ses messages privés, envoyés ou reçus (missions terminées : il n'en reste rien à l'autre participant)
+  await Message.deleteMany({ $or: [{ senderId: userId }, { recipientId: userId }] })
   await User.deleteOne({ _id: userId })
 }
 

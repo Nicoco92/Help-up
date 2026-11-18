@@ -71,6 +71,10 @@ describe('Contrat OpenAPI (dossier api/)', () => {
         ['/api/notifications/unread-count', ['get']],
         ['/api/notifications/read-all', ['post']],
         ['/api/notifications/{id}', ['get', 'patch', 'delete']],
+        ['/api/conversations', ['get']],
+        ['/api/conversations/unread-count', ['get']],
+        ['/api/conversations/{id}', ['get']],
+        ['/api/conversations/{id}/messages', ['get', 'post']],
     ])('%s expose %j', (route, methods) => {
         expect(spec.paths[route]).toBeDefined();
         for (const method of methods) expect(spec.paths[route][method]).toBeDefined();

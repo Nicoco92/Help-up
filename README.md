@@ -96,8 +96,8 @@ Deux scripts **mongosh** autonomes (aucune dépendance), exécutables directemen
 
 | Fichier | Effet |
 |---|---|
-| `backend/sql/seed.js` | Crée la base **vide** : collections `users`, `missions`, `applications`, `reviews`, règles de validation et index. Ne supprime rien, peut être relancé |
-| `backend/migration/seed-demo.js` | Crée la base (même structure) **puis** insère 15 comptes, 32 missions, 45 candidatures et 10 avis. Si la démo existe déjà, n'insère rien, sauf avec `RESET = true` en haut de la partie 2 : seuls les comptes `@helpup.test` et ce qui leur est lié sont alors remplacés |
+| `backend/sql/seed.js` | Crée la base **vide** : collections `users`, `missions`, `applications`, `reviews`, `notifications`, `messages`, règles de validation et index. Ne supprime rien, peut être relancé |
+| `backend/migration/seed-demo.js` | Crée la base (même structure) **puis** insère 15 comptes, 32 missions, une quarantaine de candidatures, des avis, des notifications et 6 messages privés. Si la démo existe déjà, n'insère rien, sauf avec `RESET = true` en haut de la partie 2 : seuls les comptes `@helpup.test` et ce qui leur est lié sont alors remplacés |
 
 **Lancer sur Atlas en une commande** (Docker fournit mongosh, `MONGODB_URI` est lu dans le fichier d'environnement racine) :
 
@@ -117,9 +117,9 @@ Comptes de démo (mot de passe `password123`) :
 
 | Compte | Rôle dans la démo |
 |---|---|
-| `alice.martin@helpup.test` | Publie des missions : une ouverte avec 3 candidats à accepter, une attribuée, une terminée avec avis |
+| `alice.martin@helpup.test` | Publie des missions : une ouverte avec 3 candidats à accepter, une attribuée (conversation avec Chloé, 1 message non lu), une terminée avec avis (conversation avec Bob, en lecture seule) |
 | `bob.nguyen@helpup.test` | Étudiant : candidatures en attente, refusée, et une mission terminée |
-| `chloe.diallo@helpup.test` | Publie **et** postule |
+| `chloe.diallo@helpup.test` | Publie **et** postule ; prestataire du déménagement d'Alice (messagerie) |
 
 > La base Atlas est **partagée** par l'équipe : prévenir les autres avant un `RESET = true`.
 > Détail des collections, contraintes et index : [docs/modele-donnees.md](docs/modele-donnees.md).

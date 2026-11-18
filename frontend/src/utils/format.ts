@@ -10,6 +10,16 @@ export const initials = (p: Person) =>
 // 0612345678 → 06 12 34 56 78
 export const formatPhone = (phone: string) => phone.replace(/(\d{2})(?=\d)/g, '$1 ')
 
+// Date ISO → « il y a 5 min », « il y a 2 h », « hier », « 12 nov. »
+export function formatWhen(iso: string): string {
+  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)
+  if (minutes < 1) return 'à l’instant'
+  if (minutes < 60) return `il y a ${minutes} min`
+  if (minutes < 24 * 60) return `il y a ${Math.floor(minutes / 60)} h`
+  if (minutes < 48 * 60) return 'hier'
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+}
+
 export function memberSince(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }

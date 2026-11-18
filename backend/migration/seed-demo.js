@@ -1,5 +1,5 @@
 // =============================================================================================
-//  HelpUP — création de la base + DONNÉES DE DÉMO (comptes, missions, candidatures, avis)
+//  HelpUP — création de la base + DONNÉES DE DÉMO (comptes, missions, candidatures, avis, messages)
 //  Script mongosh autonome : aucune dépendance, exécutable directement sur Atlas.
 //
 //  Lancer :
@@ -37,7 +37,7 @@
   const MISSION_STATUSES = ['open', 'assigned', 'completed', 'cancelled']
   const APPLICATION_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn']
   const NOTIFICATION_TYPES = ['mission_nearby', 'application_received', 'application_accepted', 'application_rejected',
-    'mission_completed', 'review_received']
+    'mission_completed', 'review_received', 'message_received']
 
   const str = (min, max, extra = {}) => ({ bsonType: 'string', minLength: min, maxLength: max, ...extra })
   const num = (min, max) => ({ bsonType: ['int', 'long', 'double'], minimum: min, maximum: max })
@@ -161,6 +161,25 @@
         { key: { userId: 1, createdAt: -1 }, name: 'user_recent' },
         { key: { userId: 1, readAt: 1 }, name: 'user_unread' },
         { key: { createdAt: 1 }, name: 'expire_after_90_days', expireAfterSeconds: 90 * 24 * 3600 },
+      ],
+    },
+
+    messages: {
+      schema: {
+        required: ['missionId', 'senderId', 'recipientId', 'body'],
+        properties: {
+          missionId: id,
+          senderId: id,
+          recipientId: id,
+          body: str(1, 2000),
+          readAt: { bsonType: ['date', 'null'] },
+          createdAt: date,
+          updatedAt: date,
+        },
+      },
+      indexes: [
+        { key: { missionId: 1, createdAt: 1 }, name: 'mission_thread' },
+        { key: { recipientId: 1, readAt: 1 }, name: 'recipient_unread' },
       ],
     },
   }
@@ -384,8 +403,9 @@
       const a = database.applications.deleteMany({ $or: [{ missionId: { $in: missionIds } }, { applicantId: { $in: userIds } }] })
       const m = database.missions.deleteMany({ _id: { $in: missionIds } })
       const n = database.notifications.deleteMany({ userId: { $in: userIds } })
+      const msg = database.messages.deleteMany({ $or: [{ missionId: { $in: missionIds } }, { senderId: { $in: userIds } }, { recipientId: { $in: userIds } }] })
       const u = database.users.deleteMany({ _id: { $in: userIds } })
-      print(`  Démo précédente supprimée : ${u.deletedCount} comptes, ${m.deletedCount} missions, ${a.deletedCount} candidatures, ${r.deletedCount} avis, ${n.deletedCount} notifications`)
+      print(`  Démo précédente supprimée : ${u.deletedCount} comptes, ${m.deletedCount} missions, ${a.deletedCount} candidatures, ${r.deletedCount} avis, ${n.deletedCount} notifications, ${msg.deletedCount} messages`)
     }
 
     // --- Comptes ---
@@ -466,11 +486,28 @@
       notify(bob, 'application_rejected', `Votre candidature pour « ${demenagement.title} » n’a pas été retenue.`, '/applications', demenagement, 30, true),
       notify(bob, 'mission_completed', `« ${maths.title} » est terminée. Pensez à noter Alice.`, '/dashboard', maths, 120, true),
       notify(chloe, 'application_accepted', `Bonne nouvelle : votre candidature pour « ${demenagement.title} » est acceptée.`, '/dashboard', demenagement, 30),
+      notify(alice, 'message_received', `Chloé D. vous a écrit à propos de « ${demenagement.title} ».`, `/messages/${demenagement._id.toHexString()}`, demenagement, 1),
     ]
     database.notifications.insertMany(notifications)
-    print(`  ✓ ${users.length} comptes, ${missions.length} missions, ${applications.length} candidatures, ${reviews.length} avis, ${notifications.length} notifications`)
+
+    // --- Messagerie de la démo : Alice et Chloé s'organisent pour le déménagement (mission attribuée),
+    // Alice et Bob ont échangé avant la mission de maths (terminée : conversation en lecture seule).
+    const message = (mission, from, to, body, hours, read = true) => ({
+      _id: new ObjectId(), missionId: mission._id, senderId: from._id, recipientId: to._id, body,
+      readAt: read ? hoursAgo(hours - 0.1) : null, createdAt: hoursAgo(hours), updatedAt: hoursAgo(hours),
+    })
+    const messages = [
+      message(demenagement, alice, chloe, 'Bonjour Chloé, merci d’avoir accepté ! Les cartons sont prêts, il y en a une quinzaine.', 28),
+      message(demenagement, chloe, alice, 'Bonjour Alice, avec plaisir. Je viens avec un ami pour le canapé, ça vous va ?', 27),
+      message(demenagement, alice, chloe, 'Parfait. Le code de l’immeuble vous sera donné la veille.', 26),
+      message(demenagement, chloe, alice, 'Super, à samedi ! Je peux être là un peu avant 9 h si besoin.', 1, false),
+      message(maths, alice, bob, 'Bonjour Bob, mon fils a surtout besoin de revoir Pythagore.', 140),
+      message(maths, bob, alice, 'Très bien, je prépare quelques exercices. À mercredi !', 139),
+    ]
+    database.messages.insertMany(messages)
+    print(`  ✓ ${users.length} comptes, ${missions.length} missions, ${applications.length} candidatures, ${reviews.length} avis, ${notifications.length} notifications, ${messages.length} messages`)
     print('\nComptes de démo (mot de passe : password123) :')
-    print('  alice.martin@helpup.test   publie des missions (1 ouverte avec 3 candidats, 1 attribuée, 1 terminée)')
+    print('  alice.martin@helpup.test   publie des missions (1 ouverte avec 3 candidats, 1 attribuée, 1 terminée) ; messages avec Chloé et Bob')
     print('  bob.nguyen@helpup.test     étudiant (candidatures en attente, refusée, mission terminée)')
     print('  chloe.diallo@helpup.test   publie et postule')
     print(`  + ${users.length - 3} autres comptes ${DEMO_DOMAIN}, même mot de passe.`)

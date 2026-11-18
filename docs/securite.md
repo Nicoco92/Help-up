@@ -21,7 +21,7 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 
 | # | OWASP | Constat (avant) | Gravité | Correction | Test |
 |---|---|---|---|---|---|
-| 1 | A07 | Aucune limite de tentatives : force brute des mots de passe et création de comptes en masse | **Haute** | `express-rate-limit` : connexion 10 échecs / 15 min / IP (les connexions réussies ne comptent pas, la démo n'est jamais bloquée), inscription 20 / h, API 300 / min ; réponse `429 TOO_MANY_REQUESTS` + `Retry-After` | ✅ |
+| 1 | A07 | Aucune limite de tentatives : force brute des mots de passe et création de comptes en masse | **Haute** | `express-rate-limit` : connexion 10 échecs / 15 min / IP (les connexions réussies ne comptent pas, la démo n'est jamais bloquée), inscription 20 / h, messages privés 30 / min, API 300 / min ; réponse `429 TOO_MANY_REQUESTS` + `Retry-After` | ✅ |
 | 2 | A05 | API et front de développement publiés sur **toutes** les interfaces réseau (`3000:3000`, `5173:5173`) : accessibles depuis le Wi-Fi de l'école | **Haute** | Ports liés à `127.0.0.1` dans `compose.yaml`, comme Mongo et mongo-express | — |
 | 3 | A02 | `JWT_SECRET` accepté quelle que soit sa longueur (`change-me` du modèle compris) : jeton forgeable par force brute hors ligne | **Moyenne** | 32 caractères minimum et liste de secrets interdits : refus de démarrer en production, avertissement en développement | — |
 | 4 | A07 | Jeton sans émetteur ni destinataire ; durée par défaut de **7 jours** si `JWT_EXPIRES_IN` manque | Moyenne | Claims `iss` et `aud` signés et vérifiés, algorithme `HS256` imposé, sujet obligatoirement un ObjectId, durée par défaut **1 h** | ✅ (8 jetons falsifiés → 401) |
@@ -43,11 +43,12 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 | OWASP | Contrôle | Où |
 |---|---|---|
 | A01 | Chaque requête métier filtre par propriétaire (`ownerId`, `applicantId`, `authorId`, `userId` = JWT) ; l'objet d'un autre = **404** comme un objet absent | services `application`, `mission`, `review`, `notification` |
+| A01 | Messagerie : seuls `ownerId` et `providerId` de la mission lisent et écrivent la conversation (un candidat refusé ou un tiers = **404**) ; expéditeur et destinataire fixés par le serveur, jamais lus dans le corps | `message.service.ts` ; `tests/messages.test.ts` ✅ |
 | A01 | Routes d'administration derrière `requireRole('admin')` ; impossible de se donner le rôle admin (inscription et `PATCH /me` en `strict`) ; un admin ne peut pas modifier son propre rôle | `user.routes.ts`, `user.service.ts` |
 | A01 | Utilisateur rechargé en base à chaque requête : compte supprimé ou rôle retiré = pris en compte immédiatement | `auth.middleware.ts` |
 | A03 | Validation zod **stricte** de chaque corps et de chaque paramètre (champ inconnu → 400) : aucun opérateur `$ne`/`$gt` ne peut atteindre MongoDB | `validators/*.ts` ; test « injection NoSQL » ✅ |
 | A03 | Recherche texte : caractères spéciaux d'expression régulière échappés, 80 caractères au plus (pas de ReDoS) | `explore.service.ts` ; test ✅ |
-| A03 | React échappe tout l'affichage ; aucun `dangerouslySetInnerHTML` ; le seul HTML construit à la main (marqueur Leaflet) ne contient qu'un nombre | `MissionMap.tsx` |
+| A03 | React échappe tout l'affichage (messages privés compris, rendus en texte) ; aucun `dangerouslySetInnerHTML` ; le seul HTML construit à la main (marqueur Leaflet) ne contient qu'un nombre | `MissionMap.tsx` |
 | A03 | Paramètres d'URL toujours des chaînes (parseur « simple » d'Express 5, désormais explicite) | `app.ts` ; test ✅ |
 | A04 | Logique métier : on ne postule pas à sa mission, on ne note qu'une mission terminée et que l'autre participant, une seule acceptation possible même en simultané (`findOneAndUpdate` conditionnel), index uniques contre les doublons | services |
 | A05 | `helmet` (CSP de l'API, HSTS, `nosniff`, `X-Powered-By` retiré) ; JSON limité à 100 ko ; erreurs 500 sans détail technique | `app.ts`, `error.middleware.ts` |
@@ -67,6 +68,7 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 | Pas de vérification d'email ni de double authentification | Hors périmètre du MVP | Vérification d'email, double authentification pour les admins |
 | Conteneurs de développement lancés en root, `npm install` | Environnement local uniquement | Image de production : `npm ci --omit=dev`, utilisateur `node`, système de fichiers en lecture seule |
 | Avatars hébergés ailleurs | Pas de stockage de fichiers dans le MVP | Envoi de fichier vers le serveur, contrôle du type et redimensionnement |
+| Messagerie par interrogation régulière (5 s dans une conversation ouverte, 30 s pour la pastille), messages non chiffrés en base | Pas de WebSocket ni de chiffrement dans la stack imposée ; TLS en transit en production | WebSocket (Socket.IO authentifié par le JWT) si le trafic augmente ; modération et signalement des messages |
 | Swagger public sur `/api/docs` | Exigé par le livret pour la démo | Le désactiver ou le protéger en production |
 | 18 alertes modérées dans jest | Outil de test, jamais déployé | Mettre jest à jour quand la version majeure corrigée sera stable (Dependabot la proposera) |
 
