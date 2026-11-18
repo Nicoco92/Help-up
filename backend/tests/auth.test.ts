@@ -1,4 +1,5 @@
 import request from 'supertest'
+import jwt from 'jsonwebtoken'
 import app from '../src/api/app'
 import { connectTestDb, clearTestDb, closeTestDb } from './setup'
 import { User } from '../src/models/user.model'
@@ -155,6 +156,59 @@ describe('POST /api/auth/login', () => {
       password: 'password123',
       firstName: 'Jean',
       lastName: 'Dupont',
+    })
+  })
+
+  describe('POST /api/auth/refresh', () => {
+    let token: string
+    let userId: string
+
+    beforeEach(async () => {
+      const res = await request(app).post('/api/auth/register').send({
+        email: 'refresh@helpup.test',
+        password: 'password123',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+      })
+      token = res.body.token
+      userId = res.body.user.id
+    })
+
+    test('Renvoie un nouveau JWT utilisable avec un jeton valide', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Authorization', `Bearer ${token}`)
+
+      expect(res.status).toBe(200)
+      expect(typeof res.body.token).toBe('string')
+
+      const me = await request(app)
+        .get('/api/users/me')
+        .set('Authorization', `Bearer ${res.body.token}`)
+      expect(me.status).toBe(200)
+      expect(me.body.id).toBe(userId)
+    })
+
+    test('Refuse le renouvellement sans JWT', async () => {
+      const res = await request(app).post('/api/auth/refresh')
+
+      expect(res.status).toBe(401)
+    })
+
+    test('Refuse le renouvellement avec un JWT expiré', async () => {
+      const expiredToken = jwt.sign({}, 'test-only-secret-never-used-outside-jest', {
+        algorithm: 'HS256',
+        subject: userId,
+        issuer: 'helpup-api',
+        audience: 'helpup-web',
+        expiresIn: -1,
+      })
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Authorization', `Bearer ${expiredToken}`)
+
+      expect(res.status).toBe(401)
     })
   })
 

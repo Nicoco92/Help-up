@@ -22,7 +22,7 @@ servers:
 tags:
   - name: Health
   - name: Auth
-    description: Sign-up (= user creation) and login. Public routes.
+    description: Sign-up and login are public; token renewal requires a valid JWT.
   - name: Users
     description: |
       Users CRUD. Creation goes through `POST /api/auth/register` (it also returns the JWT).
@@ -50,6 +50,8 @@ paths:
     $ref: './paths/auth.yaml#/register'
   /api/auth/login:
     $ref: './paths/auth.yaml#/login'
+  /api/auth/refresh:
+    $ref: './paths/auth.yaml#/refresh'
 
   /api/users:
     $ref: './paths/users.yaml#/users'
@@ -160,6 +162,8 @@ components:
       $ref: './components/schemas/auth.yaml#/LoginInput'
     AuthResponse:
       $ref: './components/schemas/auth.yaml#/AuthResponse'
+    TokenResponse:
+      $ref: './components/schemas/auth.yaml#/TokenResponse'
 
     # Users
     User:

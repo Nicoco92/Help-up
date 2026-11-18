@@ -14,6 +14,10 @@ function toAuthResult(user: IUserDocument): AuthResult {
 }
 
 export class AuthService {
+  refresh(userId: string): { token: string } {
+    return { token: signToken(userId) }
+  }
+
   async register(data: RegisterInput): Promise<AuthResult> {
     const existingUser = await User.exists({ email: data.email })
     if (existingUser) {

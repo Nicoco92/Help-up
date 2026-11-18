@@ -58,6 +58,25 @@ export const tokenStorage = {
   },
 }
 
+export function getTokenRefreshDelay(token: string): number | null {
+  const encodedPayload = token.split('.')[1]
+  if (!encodedPayload) return null
+
+  try {
+    const base64 = encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')))
+    if (typeof payload.iat !== 'number' || typeof payload.exp !== 'number') return null
+
+    const lifetime = payload.exp - payload.iat
+    if (lifetime <= 0) return null
+
+    const refreshAt = (payload.iat + lifetime * 0.8) * 1000
+    return Math.max(0, refreshAt - Date.now())
+  } catch {
+    return null
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = tokenStorage.get()
   const headers = new Headers(options.headers)
@@ -107,6 +126,7 @@ export const authApi = {
     request<AuthResponse>('/auth/register', json('POST', payload)),
   login: (payload: { email: string; password: string }) =>
     request<AuthResponse>('/auth/login', json('POST', payload)),
+  refresh: () => request<{ token: string }>('/auth/refresh', { method: 'POST' }),
 }
 
 export const usersApi = {

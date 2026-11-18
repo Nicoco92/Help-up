@@ -38,3 +38,9 @@ AuthResponse:
   properties:
     user: { $ref: '../../openapi.yaml#/components/schemas/User' }
     token: { type: string, description: 'JWT `{ sub: userId }` signed with JWT_SECRET' }
+
+TokenResponse:
+  type: object
+  required: [token]
+  properties:
+    token: { type: string, description: 'New JWT `{ sub: userId }` signed with JWT_SECRET' }

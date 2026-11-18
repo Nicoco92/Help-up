@@ -53,3 +53,18 @@ login:
       '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }
       '413': { $ref: '../openapi.yaml#/components/responses/PayloadTooLarge' }
       '429': { $ref: '../openapi.yaml#/components/responses/TooManyRequests' }
+
+refresh:
+  post:
+    tags: [Auth]
+    summary: Renews an access token
+    description: Returns a new JWT while the current token is still valid.
+    operationId: refreshToken
+    x-status: implemented
+    responses:
+      '200':
+        description: Token renewed
+        content:
+          application/json:
+            schema: { $ref: '../openapi.yaml#/components/schemas/TokenResponse' }
+      '401': { $ref: '../openapi.yaml#/components/responses/Unauthorized' }

@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { RegisterPayload, UpdateProfilePayload, User } from '../types/auth'
-import { ApiError, authApi, usersApi, tokenStorage, SESSION_EXPIRED_EVENT } from '../services/api'
+import {
+  ApiError,
+  authApi,
+  getTokenRefreshDelay,
+  usersApi,
+  tokenStorage,
+  SESSION_EXPIRED_EVENT,
+} from '../services/api'
 import { AuthContext, type AuthStatus, type SessionEnd } from './AuthContextDefinition'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [sessionToken, setSessionToken] = useState(() => tokenStorage.get())
   const [status, setStatus] = useState<AuthStatus>(() =>
     tokenStorage.get() ? 'loading' : 'anonymous',
   )
@@ -12,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const startSession = useCallback((token: string, sessionUser: User) => {
     tokenStorage.set(token)
+    setSessionToken(token)
     setUser(sessionUser)
     setStatus('authenticated')
     setSessionEnd(null)
@@ -20,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const endSession = useCallback((reason: SessionEnd) => {
     tokenStorage.set(null)
+    setSessionToken(null)
     setUser(null)
     setStatus('anonymous')
     setSessionEnd(reason)
@@ -36,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .getMe()
       .then((me) => {
         if (cancelled) return
+        setSessionToken(tokenStorage.get())
         setUser(me)
         setStatus('authenticated')
       })
@@ -56,6 +67,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener(SESSION_EXPIRED_EVENT, expire)
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expire)
   }, [expire])
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !sessionToken) return
+
+    const delay = getTokenRefreshDelay(sessionToken)
+    if (delay === null) return
+
+    let timeout: number
+    let cancelled = false
+    const refresh = async () => {
+      try {
+        const { token } = await authApi.refresh()
+        if (cancelled) return
+        tokenStorage.set(token)
+        setSessionToken(token)
+      } catch (err) {
+        if (cancelled) return
+        if (err instanceof ApiError && err.status === 401) {
+          expire()
+          return
+        }
+        timeout = window.setTimeout(refresh, 60_000)
+      }
+    }
+
+    timeout = window.setTimeout(refresh, delay)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeout)
+    }
+  }, [expire, sessionToken, status])
 
   const login = useCallback(
     async (email: string, password: string) => {
