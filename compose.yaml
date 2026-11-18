@@ -11,12 +11,22 @@ name: helpup
 #   - backend : NODE_ENV=production, `node dist/server.js` (JWT_SECRET < 32 caractères = refus de démarrer) ;
 #   - frontend : build Vite servi par nginx, qui relaie aussi /api vers le backend (même origine) ;
 #   - seul nginx est publié (127.0.0.1:5173, cible du tunnel Cloudflare) ; Mongo et l'API ne le sont pas ;
-#   - pas de mongo-express.
+#   - pas de mongo-express ;
+#   - journaux des conteneurs plafonnés (rotation), durée annoncée dans la page Confidentialité.
+
+# Rotation des journaux (IP, pages demandées…) : 3 fichiers de 10 Mo par conteneur, les plus anciens effacés.
+# À garder synchronisé avec LOG_RETENTION (frontend/src/constants/legal.ts).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   mongo:
     image: mongo:7.0
     restart: unless-stopped
+    logging: *logging
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?définir MONGO_ROOT_USER dans .env}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?définir MONGO_ROOT_PASSWORD dans .env}
@@ -36,6 +46,7 @@ services:
     build: ./backend
     image: helpup-backend:prod
     restart: unless-stopped
+    logging: *logging
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -66,6 +77,7 @@ services:
         VITE_API_URL: /api
     image: helpup-frontend:prod
     restart: unless-stopped
+    logging: *logging
     ports:
       - "127.0.0.1:5173:80"
     depends_on:
