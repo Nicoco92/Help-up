@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom'
-import { HandHeart } from 'lucide-react'
 
+// Logo texte « helpup. » : « up » en vert de marque, point final orange.
+// Les logotypes sont exemptés des exigences de contraste WCAG (1.4.3 / 1.4.6) ;
+// le nom accessible vient de l'aria-label du lien.
 export function Logo({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/" className="logo" aria-label="HelpUP, retour à l’accueil" onClick={onClick}>
-      <span className="logo__mark" aria-hidden="true">
-        <HandHeart size={18} strokeWidth={2} />
-      </span>
-      <span>
-        Help<span className="logo__accent">UP</span>
+      <span aria-hidden="true">
+        help<span className="logo__accent">up</span>
+        <span className="logo__dot">.</span>
       </span>
     </Link>
   )
