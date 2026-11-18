@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { Navbar } from './Navbar'
 import { RouteAnnouncer } from './RouteAnnouncer'
 import { useAuth } from '../hooks/useAuth'
+import { LEGAL_PAGES } from '../constants/legal'
 
 export function Layout() {
   const { isAuthenticated } = useAuth()
@@ -49,6 +50,7 @@ export function Layout() {
       />
       <main id="contenu" tabIndex={-1} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Outlet />
+        <Footer />
       </main>
     </div>
   )
@@ -58,8 +60,16 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="container footer__inner">
-        <span>© {new Date().getFullYear()} HelpUP · Un coup de main, une petite prime.</span>
-        <span>Projet étudiant Efrei · Full Stack JS</span>
+        <span>© {new Date().getFullYear()} HelpUP · Projet étudiant Efrei · Full Stack JS</span>
+        <nav aria-label="Informations légales">
+          <ul className="footer__links">
+            {LEGAL_PAGES.map((page) => (
+              <li key={page.to}>
+                <Link to={page.to}>{page.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
   )

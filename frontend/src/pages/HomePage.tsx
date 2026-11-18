@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { CATEGORIES } from '../constants/categories'
-import { Footer } from '../components/Layout'
 import { Avatar } from '../components/Avatar'
 import { profileCompletion } from '../utils/format'
 import type { User } from '../types/auth'
@@ -198,7 +197,6 @@ function GuestHome() {
           </div>
         </div>
       </section>
-      <Footer />
     </>
   )
 }

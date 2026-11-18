@@ -1992,6 +1992,22 @@ button.chip[aria-pressed='true'] {
   flex-wrap: wrap;
 }
 
+.footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cibles d'au moins 44 px (WCAG 2.5.5 AAA) */
+.footer__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+}
+
 /* ---------- 19. Animations ---------- */
 @keyframes spin {
   to {

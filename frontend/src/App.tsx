@@ -20,6 +20,9 @@ import { ConversationPage } from './pages/ConversationPage'
 import { MyMissionsPage } from './pages/MyMissionsPage'
 import { MissionFormPage } from './pages/MissionFormPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { LegalNoticePage } from './pages/LegalNoticePage'
+import { PrivacyPage } from './pages/PrivacyPage'
+import { TermsPage } from './pages/TermsPage'
 
 export default function App() {
   return (
@@ -31,6 +34,11 @@ export default function App() {
           {/* Un membre déjà connecté est redirigé par la page elle-même */}
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+
+          {/* Pages légales : publiques */}
+          <Route path="mentions-legales" element={<LegalNoticePage />} />
+          <Route path="confidentialite" element={<PrivacyPage />} />
+          <Route path="conditions" element={<TermsPage />} />
 
           {/* Pages réservées aux membres connectés (l'API exige aussi le JWT) */}
           <Route element={<RequireAuth />}>

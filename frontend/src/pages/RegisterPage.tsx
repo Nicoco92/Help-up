@@ -145,7 +145,9 @@ export function RegisterPage() {
       </form>
 
       <p className="auth__legal">
-        En créant un compte, tu acceptes les conditions d’utilisation de HelpUP.
+        En créant un compte, tu acceptes les <Link to="/conditions">conditions d’utilisation</Link> de HelpUP.
+        Pour savoir ce que nous faisons de tes données, lis la page{' '}
+        <Link to="/confidentialite">Confidentialité</Link>.
       </p>
       <p className="auth__switch">
         Déjà inscrit ? <Link to="/login">Connecte-toi</Link>
