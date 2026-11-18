@@ -9,6 +9,9 @@ import App from './App'
 import { applyThemePreference, getThemePreference } from './utils/theme'
 
 applyThemePreference(getThemePreference())
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (getThemePreference() === 'auto') applyThemePreference('auto')
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
