@@ -149,7 +149,7 @@ export function AdminPage() {
                         <td>
                           {u.role === 'admin' ? (
                             <span className="badge">
-                              <Shield size={12} aria-hidden="true" /> Admin
+                              <Shield size={16} aria-hidden="true" /> Admin
                             </span>
                           ) : (
                             <span className="badge badge--neutral">Membre</span>

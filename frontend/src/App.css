@@ -1,5 +1,5 @@
 .explore-page {
-  width: min(100% - 40px, 1440px);
+  width: min(100% - 40px, var(--container-wide));
   margin: 0 auto;
   padding: var(--space-8) 0 var(--space-12);
   flex: 1;
@@ -190,102 +190,11 @@
   gap: 4px;
 }
 
-.button {
-  display: inline-flex;
-  min-height: var(--control-height);
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 14px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-button);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 650;
-  text-decoration: none;
-  transition:
-    background var(--duration-base) ease-out,
-    border-color var(--duration-base) ease-out,
-    color var(--duration-base) ease-out,
-    transform var(--duration-fast) ease-out,
-    box-shadow var(--duration-base) ease-out;
-}
-
-.button--sm {
-  min-height: 44px;
-  padding-inline: 12px;
-  font-size: var(--text-caption);
-}
-
-.button--md {
-  min-height: var(--control-height);
-}
-
-.button--lg {
-  min-height: var(--control-height-primary);
-  padding-inline: 18px;
-}
-
-.button--icon-only {
-  width: 44px;
-  min-width: 44px;
-  padding: 0;
-}
-
 .button__icon {
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-}
-
-.button:active {
-  transform: scale(0.98);
-}
-
-.button--primary,
-.button-primary {
-  background: var(--color-tint);
-  color: var(--color-on-tint);
-}
-
-.button--primary:hover,
-.button-primary:hover {
-  background: var(--color-tint-pressed);
-}
-
-.button--secondary,
-.button-secondary {
-  border-color: var(--color-field-border);
-  background: var(--color-surface);
-  color: var(--color-label);
-}
-
-.button--secondary:hover,
-.button-secondary:hover {
-  border-color: var(--color-tint);
-  color: var(--color-tint);
-}
-
-.button--ghost,
-.button-quiet {
-  background: transparent;
-  color: var(--color-label-secondary);
-}
-
-.button--ghost:hover,
-.button-quiet:hover {
-  background: var(--color-surface-tinted);
-  color: var(--color-tint);
-}
-
-.button--danger {
-  background: var(--color-danger);
-  color: var(--color-surface);
-}
-
-.button--danger:hover {
-  filter: brightness(0.92);
 }
 
 .search-button {
@@ -535,17 +444,22 @@
 }
 
 .map-frame {
-  /* Contient les z-index de Leaflet (jusqu'à 1000) pour que la carte reste sous la navbar. */
+  /* L'isolation maintient les couches Leaflet sous la navigation. */
   isolation: isolate;
   position: sticky;
-  /* Hauteur de la navbar (64 px) + marge */
-  top: calc(64px + var(--space-4));
+  top: var(--space-4);
   height: min(78vh, 840px);
   min-height: 480px;
   overflow: hidden;
   border: 1px solid var(--color-separator);
   border-radius: var(--radius-card);
   background: var(--color-surface-tinted);
+}
+
+@media (max-width: 767px) {
+  .map-frame {
+    top: calc(56px + var(--space-4));
+  }
 }
 
 .map-mode-control {
@@ -841,7 +755,7 @@
 }
 
 .detail-page {
-  width: min(100% - 40px, 920px);
+  width: min(100% - 40px, var(--container));
   flex: 1;
   margin: 0 auto;
   padding: var(--space-8) 0 var(--space-12);
@@ -851,15 +765,29 @@
   display: inline-flex;
   min-height: 44px;
   align-items: center;
-  gap: 8px;
-  margin-bottom: var(--space-4);
-  padding: 0;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4) calc(-1 * var(--space-3));
+  padding: 0 var(--space-3);
   border: 0;
+  border-radius: var(--radius-button);
   background: transparent;
   color: var(--color-tint);
   cursor: pointer;
   font-weight: 650;
   text-decoration: none;
+  transition:
+    background-color var(--duration-base) ease-out,
+    color var(--duration-base) ease-out,
+    transform var(--duration-fast) ease-out;
+}
+
+.back-link:hover {
+  background: var(--color-surface-tinted);
+  color: var(--color-tint);
+}
+
+.back-link:active {
+  transform: scale(0.98);
 }
 
 .detail-card {
@@ -1058,7 +986,7 @@
 @media (max-width: 639px) {
   .explore-page,
   .detail-page {
-    width: min(100% - 28px, 920px);
+    width: min(100% - 28px, var(--container));
     padding-top: 18px;
   }
 

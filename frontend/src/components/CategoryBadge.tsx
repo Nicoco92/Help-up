@@ -6,7 +6,7 @@ export function CategoryBadge({ category, label }: { category: string; label: st
 
   return (
     <span className="category-label">
-      <Icon size={14} strokeWidth={2} aria-hidden="true" />
+      <Icon size={16} strokeWidth={2} aria-hidden="true" />
       <span>{label}</span>
     </span>
   )

@@ -45,7 +45,7 @@ export function SkillList({ skills, empty }: { skills: string[]; empty?: string 
         const Icon = category?.icon
         return (
           <li key={slug} className="chip chip--static">
-            {Icon && <Icon size={14} aria-hidden="true" />}
+            {Icon && <Icon size={16} aria-hidden="true" />}
             {category?.label ?? slug}
           </li>
         )

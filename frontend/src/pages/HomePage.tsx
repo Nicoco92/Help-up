@@ -54,19 +54,19 @@ function MissionPreview() {
             <Hammer size={16} /> Bricolage
           </span>
           <span className="badge badge--signal">
-            <Zap size={12} /> Urgent
+            <Zap size={16} /> Urgent
           </span>
         </div>
         <h3>Monter une armoire 2 portes</h3>
         <div className="preview-card__meta">
           <span>
-            <MapPin size={14} /> Butte-aux-Cailles
+            <MapPin size={16} /> Butte-aux-Cailles
           </span>
           <span>
-            <Calendar size={14} /> Sam. 14 déc.
+            <Calendar size={16} /> Sam. 14 déc.
           </span>
           <span>
-            <Clock size={14} /> 2 h
+            <Clock size={16} /> 2 h
           </span>
         </div>
         <div className="preview-card__bottom">
@@ -85,10 +85,10 @@ function MissionPreview() {
         <h3>Porter des cartons au 3ᵉ étage</h3>
         <div className="preview-card__meta">
           <span>
-            <MapPin size={14} /> Villejuif
+            <MapPin size={16} /> Villejuif
           </span>
           <span>
-            <Clock size={14} /> 1 h 30
+            <Clock size={16} /> 1 h 30
           </span>
         </div>
         <div className="preview-card__bottom">
@@ -153,7 +153,7 @@ function GuestHome() {
             {STEPS.map(({ icon: Icon, title, text }, i) => (
               <li key={title} className="step">
                 <span className="step__icon" aria-hidden="true">
-                  <Icon size={22} />
+                  <Icon size={24} />
                 </span>
                 <span className="step__num">ÉTAPE {i + 1}</span>
                 <h3>{title}</h3>
@@ -239,7 +239,7 @@ function MemberHome({ user }: { user: User }) {
 
           <Link to="/users" className="card card--interactive quick">
             <span className="step__icon" style={{ marginBottom: 0 }} aria-hidden="true">
-              <Users size={22} />
+              <Users size={24} />
             </span>
             <h3>
               Découvre les membres <ArrowRight size={18} aria-hidden="true" />
@@ -249,7 +249,7 @@ function MemberHome({ user }: { user: User }) {
 
           <Link to="/missions" className="card card--interactive quick">
             <span className="step__icon" style={{ marginBottom: 0 }} aria-hidden="true">
-              <Briefcase size={22} />
+              <Briefcase size={24} />
             </span>
             <h3>
               Explore les missions <ArrowRight size={18} aria-hidden="true" />

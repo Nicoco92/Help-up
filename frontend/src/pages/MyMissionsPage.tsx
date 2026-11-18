@@ -52,7 +52,7 @@ function MyMissionItem({
           {mission.urgent && <span className="urgent-badge">Besoin urgent</span>}
           {mission.hidden && (
             <span className="hidden-badge">
-              <EyeOff size={13} aria-hidden="true" />
+              <EyeOff size={16} aria-hidden="true" />
               Masquée
             </span>
           )}
@@ -80,7 +80,7 @@ function MyMissionItem({
           <div className="my-mission__actions">
             <Link className="button button--secondary button--sm" to={`/missions/${mission.id}/edit`}>
               <span className="button__icon">
-                <Pencil size={15} aria-hidden="true" />
+                <Pencil size={16} aria-hidden="true" />
               </span>
               <span className="button__label">Modifier</span>
             </Link>
@@ -89,7 +89,7 @@ function MyMissionItem({
               size="sm"
               disabled={busy}
               onClick={() => onToggleHidden(mission)}
-              icon={mission.hidden ? <Eye size={15} /> : <EyeOff size={15} />}
+              icon={mission.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
             >
               {mission.hidden ? 'Réafficher' : 'Masquer'}
             </Button>

@@ -51,7 +51,7 @@ export function ApplyPanel({ missionId, onApplied }: { missionId: string; onAppl
     if (sent) {
         return (
             <section className="apply-panel apply-panel--sent" role="status">
-                <CheckCircle2 size={22} aria-hidden="true" />
+                <CheckCircle2 size={24} aria-hidden="true" />
                 <div>
                     <strong>Candidature envoyée</strong>
                     <p>Le propriétaire de la mission va la consulter. Suivez sa réponse dans vos candidatures.</p>

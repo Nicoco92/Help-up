@@ -81,7 +81,7 @@ export function CandidatesPanel({ missionId, canDecide, onDecision }: Candidates
                             <span>
                                 {c.applicant?.city && (
                                     <>
-                                        <MapPin size={14} aria-hidden="true" />
+                                        <MapPin size={16} aria-hidden="true" />
                                         {c.applicant.city} ·{' '}
                                     </>
                                 )}

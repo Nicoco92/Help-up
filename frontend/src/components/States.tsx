@@ -29,7 +29,7 @@ export function EmptyState({ icon: Icon, title, children, action }: EmptyStatePr
   return (
     <div className="state">
       <span className="state__icon" aria-hidden="true">
-        <Icon size={26} />
+        <Icon size={24} />
       </span>
       <h2>{title}</h2>
       {children && <p>{children}</p>}

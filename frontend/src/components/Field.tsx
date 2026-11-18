@@ -31,7 +31,7 @@ function FieldShell({ id, label, optional, hint, error, aside, children }: Field
       {children}
       {error ? (
         <p className="field__error" id={`${id}-error`}>
-          <AlertCircle size={14} aria-hidden="true" />
+          <AlertCircle size={16} aria-hidden="true" />
           {error}
         </p>
       ) : (

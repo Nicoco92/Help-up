@@ -27,7 +27,7 @@ function MemberCard({ member, isMe }: { member: PublicUser; isMe: boolean }) {
             {fullName(member)} {isMe && <span className="badge">Toi</span>}
           </h3>
           <span className="member-card__city">
-            <MapPin size={14} aria-hidden="true" />
+            <MapPin size={16} aria-hidden="true" />
             {member.city ?? 'Ville non précisée'}
           </span>
         </div>

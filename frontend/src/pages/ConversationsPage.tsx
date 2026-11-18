@@ -83,7 +83,7 @@ export function ConversationsPage() {
     const unread = items?.reduce((sum, c) => sum + c.unreadCount, 0) ?? 0;
 
     return (
-        <div className="page page--narrow">
+        <div className="page">
             <div className="container">
                 <header className="page-header">
                     <div>
