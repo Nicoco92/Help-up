@@ -1,0 +1,10 @@
+[Unit]
+Description=HelpUP : vérifie chaque minute s'il y a un nouveau commit sur main
+
+[Timer]
+OnBootSec=2min
+# Compté à partir de la fin du passage précédent : jamais deux déploiements qui se chevauchent
+OnUnitInactiveSec=1min
+
+[Install]
+WantedBy=timers.target

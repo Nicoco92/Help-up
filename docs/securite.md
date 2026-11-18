@@ -22,7 +22,7 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 | # | OWASP | Constat (avant) | Gravité | Correction | Test |
 |---|---|---|---|---|---|
 | 1 | A07 | Aucune limite de tentatives : force brute des mots de passe et création de comptes en masse | **Haute** | `express-rate-limit` : connexion 10 échecs / 15 min / IP (les connexions réussies ne comptent pas, la démo n'est jamais bloquée), inscription 20 / h, messages privés 30 / min, API 300 / min ; réponse `429 TOO_MANY_REQUESTS` + `Retry-After` | ✅ |
-| 2 | A05 | API et front de développement publiés sur **toutes** les interfaces réseau (`3000:3000`, `5173:5173`) : accessibles depuis le Wi-Fi de l'école | **Haute** | Ports liés à `127.0.0.1` dans `compose.yaml`, comme Mongo et mongo-express | — |
+| 2 | A05 | API et front de développement publiés sur **toutes** les interfaces réseau (`3000:3000`, `5173:5173`) : accessibles depuis le Wi-Fi de l'école | **Haute** | Ports liés à `127.0.0.1` dans `compose.dev.yaml`, comme Mongo et mongo-express ; en production (`compose.yaml`), seul nginx est publié, sur `127.0.0.1` | — |
 | 3 | A02 | `JWT_SECRET` accepté quelle que soit sa longueur (`change-me` du modèle compris) : jeton forgeable par force brute hors ligne | **Moyenne** | 32 caractères minimum et liste de secrets interdits : refus de démarrer en production, avertissement en développement | — |
 | 4 | A07 | Jeton sans émetteur ni destinataire ; durée par défaut de **7 jours** si `JWT_EXPIRES_IN` manque | Moyenne | Claims `iss` et `aud` signés et vérifiés, algorithme `HS256` imposé, sujet obligatoirement un ObjectId, durée par défaut **1 h** | ✅ (8 jetons falsifiés → 401) |
 | 5 | A02 | Mot de passe limité à 72 **caractères** : avec des accents, au-delà de 72 **octets**, bcrypt tronquait en silence | Moyenne | Limite en octets UTF-8 (`TextEncoder`) | ✅ |
@@ -55,7 +55,7 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 | A07 | Mêmes code et message pour un email inconnu et un mauvais mot de passe | `auth.service.ts` ; test ✅ |
 | A02 | Hachage bcrypt, `passwordHash` jamais sélectionné ni renvoyé | `user.model.ts` ; test ✅ |
 | — | Pas de cookie de session : **CSRF impossible** (le jeton part dans l'en-tête `Authorization`, qu'un autre site ne peut pas ajouter) | `services/api.ts` |
-| — | Secrets : un seul `.env` non versionné, `.env.example` sans valeur réelle, rien de secret préfixé `VITE_` ; le backend ne reçoit jamais le mot de passe root de Mongo | `compose.yaml` |
+| — | Secrets : un seul `.env` non versionné, `.env.example` sans valeur réelle, rien de secret préfixé `VITE_` ; le backend ne reçoit jamais le mot de passe root de Mongo | `compose.yaml`, `compose.dev.yaml` |
 
 ## 4. Risques acceptés et recommandations pour une mise en production
 
@@ -66,13 +66,13 @@ Gravité : **Haute** = exploitable sans compte ou avec un compte ordinaire ; **M
 | `409 EMAIL_ALREADY_USED` révèle qu'un email est inscrit | Imposé par le contrat du livret | Limitation de débit (faite) ; à terme, inscription par lien envoyé par email |
 | Suppression de compte (`DELETE /api/users/me`) sans redemander le mot de passe | Le front ne propose pas encore cette action | Exiger le mot de passe dans le corps de la requête avant de supprimer |
 | Pas de vérification d'email ni de double authentification | Hors périmètre du MVP | Vérification d'email, double authentification pour les admins |
-| Conteneurs de développement lancés en root, `npm install` | Environnement local uniquement | Image de production : `npm ci --omit=dev`, utilisateur `node`, système de fichiers en lecture seule |
+| Conteneurs de développement lancés en root, `npm install` | Environnement local uniquement (`compose.dev.yaml`) | Fait : images de production (`compose.yaml`) avec `npm ci` puis `npm prune --omit=dev`, API lancée par l'utilisateur `node`. Reste : système de fichiers en lecture seule |
 | Avatars hébergés ailleurs | Pas de stockage de fichiers dans le MVP | Envoi de fichier vers le serveur, contrôle du type et redimensionnement |
 | Messagerie par interrogation régulière (5 s dans une conversation ouverte, 30 s pour la pastille), messages non chiffrés en base | Pas de WebSocket ni de chiffrement dans la stack imposée ; TLS en transit en production | WebSocket (Socket.IO authentifié par le JWT) si le trafic augmente ; modération et signalement des messages |
 | Swagger public sur `/api/docs` | Exigé par le livret pour la démo | Le désactiver ou le protéger en production |
 | 18 alertes modérées dans jest | Outil de test, jamais déployé | Mettre jest à jour quand la version majeure corrigée sera stable (Dependabot la proposera) |
 
-Déploiement : HTTPS obligatoire (HSTS déjà envoyé), `NODE_ENV=production`, `TRUST_PROXY=1` derrière un reverse proxy, en-têtes de `vite.config.ts › preview` recopiés dans le serveur web, port Mongo fermé, mongo-express non déployé, liste d'IP autorisées et compte `readWrite` limité sur Atlas, secrets régénérés (`openssl rand -hex 32`).
+Déploiement (`compose.yaml`, détails dans le README) : HTTPS par Cloudflare (HSTS déjà envoyé), `NODE_ENV=production`, `TRUST_PROXY=1` (nginx recopie `CF-Connecting-IP` dans `X-Forwarded-For`), en-têtes de `vite.config.ts › preview` recopiés dans `frontend/nginx/security-headers.conf`, port Mongo et API non publiés, mongo-express non déployé, liste d'IP autorisées et compte `readWrite` limité sur Atlas, secrets régénérés (`openssl rand -hex 32`).
 
 ## 5. Vérifier soi-même
 

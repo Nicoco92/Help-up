@@ -38,7 +38,7 @@ function securityHeaders(apiUrl: string, withCsp: boolean): Record<string, strin
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Un seul .env pour tout le projet, à la racine. Seules les variables VITE_ sont exposées au navigateur.
-  // Sous Docker, VITE_API_URL arrive par l'environnement du conteneur (compose.yaml).
+  // Sous Docker, VITE_API_URL arrive par l'environnement du conteneur (compose.dev.yaml).
   // loadEnv lit aussi les variables VITE_ de l'environnement du processus (conteneur Docker)
   const env = loadEnv(mode, '..', 'VITE_')
   const apiUrl = env.VITE_API_URL || 'http://localhost:3000/api'
@@ -49,7 +49,8 @@ export default defineConfig(({ mode }) => {
     // Développement : pas de CSP (le rechargement à chaud de Vite injecte des scripts en ligne)
     server: { headers: securityHeaders(apiUrl, false) },
     // `npm run preview` sert le build de production avec la CSP complète : c'est elle qu'on teste avant
-    // un déploiement, et ces mêmes en-têtes sont à recopier dans le serveur web de production.
+    // un déploiement. En production, nginx envoie les mêmes en-têtes : frontend/nginx/security-headers.conf
+    // (à garder synchronisé avec cette fonction).
     preview: { headers: securityHeaders(apiUrl, true) },
   }
 })

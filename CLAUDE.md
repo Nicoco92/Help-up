@@ -36,8 +36,10 @@ Une application de mini-jobs rémunérés entre particuliers, dans le même quar
 ## État actuel (une branche par feature, ex. `feat/applications` pour Romain ; Romain commite et pousse lui-même)
 ```
 full-stack-js/
-├── compose.yaml              # mongo:7.0 (auth, hôte 127.0.0.1:27017), backend, frontend, mongo-express (profil "tools", auth)
-├── .env.example              # SEUL fichier d'env du projet : MONGO_ROOT_*, MONGO_APP_*, ME_*, JWT_*, CORS_ORIGIN, VITE_API_URL ; le vrai .env est ignoré
+├── compose.yaml              # PRODUCTION (fichier par défaut, `docker compose up -d --build`) : mongo:7.0 non publié, backend (backend/Dockerfile, NODE_ENV=production, TRUST_PROXY=1), frontend (frontend/Dockerfile : build Vite + nginx sur 127.0.0.1:5173, relaie /api, en-têtes dans frontend/nginx/), pas de mongo-express
+├── compose.dev.yaml          # DÉVELOPPEMENT (`docker compose -f compose.dev.yaml up -d`) : mongo:7.0 (auth, hôte 127.0.0.1:27017), backend, frontend, mongo-express (profil "tools", auth). Même nom de projet `helpup` : volume mongo-data partagé
+├── deploy/                   # update.sh (lancé chaque minute par helpup-update.timer sur le VPS : nouveau commit sur origin/main → merge --ff-only, `docker compose up -d --build`, vérifie /api/health ; --force pour redéployer), install.sh (installe le timer systemd)
+├── .env.example              # SEUL fichier d'env du projet : MONGO_ROOT_*, MONGO_APP_*, MONGODB_URI (vide = Mongo du compose), ME_*, JWT_*, CORS_ORIGIN (vide = localhost:5173 en dev, domaine du VPS en prod), VITE_API_URL ; le même .env sert en dev et en prod, seul fichier à créer sur un nouveau PC ; le vrai .env est ignoré
 ├── mongo/init/01-create-app-user.js   # crée l'utilisateur applicatif au 1er démarrage (volume vide)
 ├── .gitignore                # node_modules/, builds, tous les .env sauf .env.example, logs, éditeurs
 ├── frontend/                 # modèle Vite react, ESLint ; vite.config.js `envDir: '..'` (lit le .env racine) — jamais de secret préfixé VITE_ (exposé au navigateur)
@@ -64,19 +66,20 @@ full-stack-js/
 - Backend en TypeScript, syntaxe `import`/`export`, compilé en CommonJS (`module: NodeNext` + `"type": "commonjs"`) : imports relatifs sans extension. Frontend en TypeScript ESM (`tsconfig.app.json` pour src, `tsconfig.node.json` pour vite.config.ts, `src/vite-env.d.ts` type `VITE_API_URL`).
 - Scripts du backend : `dev` (`tsx watch src/server.ts`), `build` (tsc → dist/ + copie src/api/openapi), `start` (`node dist/server.js`), `typecheck`, `test` (`NODE_OPTIONS=--experimental-vm-modules jest --runInBand`, preset ts-jest, timeout 30 s ; sans ce flag, le driver mongodb 7.8 ne peut pas faire son `import('os')` dans Jest et toute connexion mongodb-memory-server échoue avec « Missing required sub-document 'driver' »), `lint`, `db:create`, `db:demo`.
 - Scripts du frontend : `dev`, `build` (`tsc -b && vite build`), `typecheck`, `lint`, `preview`.
-- Docker Compose :
+- Docker Compose (`compose.dev.yaml` = dev, `compose.yaml` = prod) :
   - Mode développement : le code est monté en volume et les `node_modules` sont dans des volumes nommés.
+  - Production : images construites (npm ci, build), front en nginx sur la même origine que l'API (`VITE_API_URL=/api`), seul nginx publié (127.0.0.1:5173, cible du tunnel Cloudflare). Une variable backend s'ajoute dans les DEUX fichiers compose.
   - Les secrets viennent du `.env` racine (lu par Compose) ; une variable manquante bloque le démarrage (`${VAR:?}`).
   - Le backend n'a pas d'`env_file` : le compose lui passe une liste explicite (`PORT`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `CORS_ORIGIN`, `MONGODB_URI`) pour qu'il ne voie jamais le mot de passe root. Ajouter une variable backend = l'ajouter dans `.env.example` ET dans `environment:` du service backend. Le frontend reçoit seulement `VITE_API_URL` (Vite lit les `VITE_*` de l'environnement du conteneur).
-  - Le compose construit `MONGODB_URI` : `mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/helpup?authSource=helpup`.
+  - `MONGODB_URI` vide dans .env : les compose le construisent (`mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/helpup?authSource=helpup`) ; rempli (Atlas) : utilisé tel quel.
   - Mongo : authentification activée ; le backend utilise un compte `readWrite` limité à `helpup`, jamais le compte root.
-  - mongo-express : se connecte en root, protégé par login (`ME_USER`/`ME_PASSWORD`), lancé avec `docker compose --profile tools up`.
-  - Ports `27017` et `8081` liés à `127.0.0.1` uniquement. En production : retirer les `ports` de mongo, ne pas déployer mongo-express, régénérer les mots de passe.
-  - Le script de `mongo/init/` ne s'exécute que si le volume `mongo-data` est vide : après un changement d'identifiants, `docker compose down -v` (efface les données).
+  - mongo-express : se connecte en root, protégé par login (`ME_USER`/`ME_PASSWORD`), lancé avec `docker compose -f compose.dev.yaml --profile tools up -d`.
+  - Dev : ports `27017` et `8081` liés à `127.0.0.1` uniquement. Prod : ni port Mongo ni mongo-express.
+  - Le script de `mongo/init/` ne s'exécute que si le volume `mongo-data` est vide : après un changement d'identifiants, `docker compose -f compose.dev.yaml down -v` (efface les données ; jamais sur le VPS sans accord).
   - Le backend attend que le healthcheck de Mongo réponde avant de démarrer.
 
 ## Environnement Docker (résolu le 2026-11-16)
-`docker compose up -d` fonctionne : `curl localhost:3000/api/health` renvoie `{"status":"ok"}`, le front répond sur http://localhost:5173.
+`docker compose -f compose.dev.yaml up -d` fonctionne : `curl localhost:3000/api/health` renvoie `{"status":"ok"}`, le front répond sur http://localhost:5173.
 - Docker Desktop (contexte `desktop-linux`) ; s'il n'est pas lancé : `systemctl --user start docker-desktop`.
 - **`mongo:7.0` et pas 8** : la VM Docker Desktop a le noyau `7.0.12-linuxkit`, que MongoDB 8 refuse (6.19.0 à 7.0.13, [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)). Repasser en 8 possible après mise à jour de Docker Desktop.
 - **Port hôte 27017** : les conteneurs d'autres cours `mongodb-cours` (27017) et `db-phpmyadmin-1` (8080) ont été arrêtés (`unless-stopped`, ils ne redémarrent pas seuls ; `docker start <nom>` pour les relancer, en arrêtant HelpUP avant pour `mongodb-cours`). `mongodb-exercice1` tourne encore sur 27018, sans conflit.
