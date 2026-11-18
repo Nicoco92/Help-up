@@ -219,7 +219,10 @@ select {
 
 /* ---------- 4. Navigation latérale ---------- */
 .app-layout {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .app-layout--with-sidebar {
