@@ -1,16 +1,16 @@
 /* HelpUP — variables de la charte (docs/charte-graphique.md §12). Source unique : ne pas redéfinir ailleurs.
-   Mode sombre automatique via prefers-color-scheme.
+   Mode automatique ou thème choisi dans le menu du compte.
    Contrastes visés : WCAG 2.2 niveau AAA (7:1 pour le texte, 3:1 pour les bordures de champ), en clair ET en sombre.
    Vérification : docs/accessibilite.md (tableau des contrastes). */
 @import '@fontsource-variable/plus-jakarta-sans';
 
 :root {
   color-scheme: light dark;
-  --color-bg: #f7f6f0;
+  --color-bg: hsl(51, 30%, 98%);
   --color-surface: #ffffff;
   --color-surface-tinted: #d8ebdd;
   --color-label: #242b27;
-  --color-label-secondary: #464c49;
+  --color-label-secondary: #7c8380;
   --color-tint: #174f40;
   --color-tint-pressed: #123f33;
   --color-on-tint: #ffffff;
@@ -22,9 +22,7 @@
   --color-field-border: #88908b;
   --color-separator: #e8ebe7;
   --font-display: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --font-text:
-    system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+  --font-text: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
   --text-display: clamp(2.25rem, 5vw, 3.5rem);
   --text-title-1: clamp(1.75rem, 3vw, 2rem);
   --text-title-2: 1.375rem;
@@ -55,18 +53,19 @@
   /* Anneau de focus : 3 px, contraste ≥ 3:1 avec le fond (WCAG 2.4.13 AAA) */
   --focus-ring-width: 3px;
   --focus-ring-offset: 2px;
-  /* Hauteur de la barre de navigation collante : le focus ne passe jamais dessous (WCAG 2.4.12) */
-  --navbar-height: 64px;
   --control-height-primary: 48px;
   --duration-fast: 100ms;
   --duration-base: 150ms;
   --duration-slow: 200ms;
 
+  --container-narrow: 760px;
   --container: 1120px;
+  --container-wide: 1440px;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
     --color-bg: #121614;
     --color-surface: #1c211e;
     --color-surface-tinted: #1e3a31;
@@ -86,6 +85,30 @@
   }
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #121614;
+  --color-surface: #1c211e;
+  --color-surface-tinted: #1e3a31;
+  --color-label: #edefea;
+  --color-label-secondary: #bfc5c1;
+  --color-tint: #8dd2b5;
+  --color-tint-pressed: #a9dfc8;
+  --color-on-tint: #0e2a22;
+  --color-signal: #f3a66b;
+  --color-on-signal: #121614;
+  --color-signal-ink: #f3a66b;
+  --color-danger: #ff9187;
+  --color-danger-surface: #3a1d1b;
+  --color-field-border: #6f7873;
+  --color-separator: #2e3632;
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
 /* Contraste renforcé demandé par le système (Windows, macOS « Augmenter le contraste ») :
    séparateurs et bordures deviennent visibles, le texte secondaire rejoint le texte principal */
 @media (prefers-contrast: more) {
@@ -97,7 +120,13 @@
 }
 
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --color-field-border: #aab2ad;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root[data-theme='dark'] {
     --color-field-border: #aab2ad;
   }
 }

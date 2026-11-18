@@ -112,7 +112,7 @@ export function NotificationsPage() {
     const unreadCount = data?.unreadCount ?? 0;
 
     return (
-        <div className="page page--narrow">
+        <div className="page">
             <div className="container">
                 <header className="page-header">
                     <div>

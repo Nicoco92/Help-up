@@ -1,9 +1,10 @@
 import { useEffect, useId, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, ChevronDown, Save, Send } from 'lucide-react'
+import { AlertCircle, ChevronDown, Save, Send } from 'lucide-react'
 import { ApiError, missionsApi } from '../services/api'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
+import { BackLink } from '../components/BackLink'
 import { TextAreaField, TextField } from '../components/Field'
 import { PageLoader } from '../components/States'
 import { CATEGORIES } from '../constants/categories'
@@ -155,7 +156,7 @@ function SelectField({
       </span>
       {error && (
         <p className="field__error" id={`${id}-error`}>
-          <AlertCircle size={14} aria-hidden="true" />
+          <AlertCircle size={16} aria-hidden="true" />
           {error}
         </p>
       )}
@@ -319,7 +320,7 @@ function MissionForm({ mission }: { mission: MyMission | null }) {
         <Link className="button button--ghost button--md" to="/missions/mine">
           Annuler
         </Link>
-        <Button type="submit" disabled={saving} icon={isEdit ? <Save size={17} /> : <Send size={17} />}>
+        <Button type="submit" disabled={saving} icon={isEdit ? <Save size={16} /> : <Send size={16} />}>
           {saving ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Publier la mission'}
         </Button>
       </div>
@@ -374,12 +375,11 @@ export function MissionFormPage() {
   }
 
   return (
-    <div className="page page--narrow">
+    <div className="page page--form">
       <div className="container">
-        <Link className="back-link" to="/missions/mine">
-          <ArrowLeft size={18} aria-hidden="true" />
+        <BackLink to="/missions/mine">
           Mes missions
-        </Link>
+        </BackLink>
         <div className="page-header">
           <div>
             <h1>{isEdit ? 'Modifier la mission' : 'Publier une mission'}</h1>

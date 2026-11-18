@@ -133,7 +133,6 @@
 
 .application-card__head a:hover {
     color: var(--color-tint);
-    text-decoration: underline;
 }
 
 .application-card__ago {

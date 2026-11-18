@@ -253,7 +253,7 @@ export function ProfilePage() {
   const { percent } = profileCompletion(user)
 
   return (
-    <div className="page page--narrow">
+    <div className="page">
       <div className="container">
         {isWelcome && editing && (
           <div style={{ marginBottom: 24 }}>
@@ -280,11 +280,11 @@ export function ProfilePage() {
               <div className="profile-hero__meta">
                 {user.city && (
                   <span>
-                    <MapPin size={14} aria-hidden="true" /> {user.city}
+                    <MapPin size={16} aria-hidden="true" /> {user.city}
                   </span>
                 )}
                 <span>
-                  <Calendar size={14} aria-hidden="true" /> Membre depuis{' '}
+                  <Calendar size={16} aria-hidden="true" /> Membre depuis{' '}
                   {memberSince(user.createdAt)}
                 </span>
                 {percent < 100 && <span>Profil complété à {percent} %</span>}

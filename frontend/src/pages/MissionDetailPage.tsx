@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Clock3, MapPin, ShieldAlert, Trash2 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, exploreApi, missionsApi } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import { Alert } from '../components/Alert'
 import { Button } from '../components/Button'
+import { BackLink } from '../components/BackLink'
 import { CategoryBadge } from '../components/CategoryBadge'
 import { StatusBadge } from '../components/StatusBadge'
 import { ApplyPanel } from '../components/ApplyPanel'
@@ -20,10 +21,9 @@ function BackButton() {
   const navigate = useNavigate()
 
   return (
-    <button className="back-link" type="button" onClick={() => navigate(-1)}>
-      <ArrowLeft size={18} aria-hidden="true" />
+    <BackLink onClick={() => navigate(-1)}>
       Retour
-    </button>
+    </BackLink>
   )
 }
 
@@ -67,12 +67,12 @@ function AdminDeletePanel({ mission }: { mission: Mission }) {
             <Button variant="ghost" size="sm" disabled={deleting} onClick={() => setConfirming(false)}>
               Annuler
             </Button>
-            <Button variant="danger" size="sm" disabled={deleting} onClick={handleDelete} icon={<Trash2 size={15} />}>
+            <Button variant="danger" size="sm" disabled={deleting} onClick={handleDelete} icon={<Trash2 size={16} />}>
               {deleting ? 'Suppression…' : 'Confirmer la suppression'}
             </Button>
           </>
         ) : (
-          <Button variant="danger" size="sm" onClick={() => setConfirming(true)} icon={<Trash2 size={15} />}>
+          <Button variant="danger" size="sm" onClick={() => setConfirming(true)} icon={<Trash2 size={16} />}>
             Supprimer la mission
           </Button>
         )}
@@ -199,7 +199,7 @@ export function MissionDetailPage() {
 
         {mission.alreadyApplied && (
           <p className="already-applied" role="status">
-            <CheckCircle2 size={19} aria-hidden="true" />
+            <CheckCircle2 size={18} aria-hidden="true" />
             Vous avez déjà envoyé une candidature pour cette mission.
           </p>
         )}

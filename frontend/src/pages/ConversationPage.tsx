@@ -1,11 +1,12 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ChevronLeft, Lock, Send } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Lock, Send } from 'lucide-react';
 import { ApiError, MESSAGES_CHANGED_EVENT, messagesApi } from '../services/api';
 import type { Conversation, Message } from '../types/message';
 import { useDraft } from '../hooks/useDraft';
 import { Alert } from '../components/Alert';
 import { Avatar } from '../components/Avatar';
+import { BackLink } from '../components/BackLink';
 import { PageLoader } from '../components/States';
 import { StatusBadge } from '../components/StatusBadge';
 import { fullName } from '../utils/format';
@@ -210,12 +211,11 @@ function ConversationScreen({ id }: { id: string }) {
 
     if (error) {
         return (
-            <div className="page page--narrow">
+            <div className="page">
                 <div className="container">
-                    <Link to="/messages" className="conversation-back">
-                        <ChevronLeft size={18} aria-hidden="true" />
+                    <BackLink to="/messages">
                         Toutes les conversations
-                    </Link>
+                    </BackLink>
                     <h1>{error.notFound ? 'Conversation introuvable' : 'Messages'}</h1>
                     <Alert variant="error">
                         {error.notFound
@@ -233,12 +233,11 @@ function ConversationScreen({ id }: { id: string }) {
     const otherName = counterpart ? fullName(counterpart) : 'Membre supprimé';
 
     return (
-        <div className="page page--narrow">
+        <div className="page">
             <div className="container">
-                <Link to="/messages" className="conversation-back">
-                    <ChevronLeft size={18} aria-hidden="true" />
+                <BackLink to="/messages">
                     Toutes les conversations
-                </Link>
+                </BackLink>
                 <header className="conversation-header">
                     {counterpart && <Avatar {...counterpart} size={48} />}
                     <div>

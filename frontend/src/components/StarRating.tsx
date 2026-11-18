@@ -47,7 +47,7 @@ export function StarRatingInput({
                             onChange={() => onChange(n)}
                             className="visually-hidden"
                         />
-                        <Star size={28} aria-hidden="true" />
+                        <Star size={24} aria-hidden="true" />
                         <span className="visually-hidden">
                             {n} étoile{n > 1 ? 's' : ''} sur 5 : {LABELS[n]}
                         </span>

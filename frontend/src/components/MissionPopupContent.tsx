@@ -27,7 +27,7 @@ export function MissionPopupContent({
           iconOnly
           aria-label="Fermer l’aperçu de la mission"
           title="Fermer"
-          icon={<X size={17} />}
+          icon={<X size={16} />}
           onClick={onClose}
         />
       </div>

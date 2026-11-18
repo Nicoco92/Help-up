@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { AlignLeft, ArrowLeft, Calendar, Mail, MapPin, Phone, Sparkles, UserX } from 'lucide-react'
+import { AlignLeft, Calendar, Mail, MapPin, Phone, Sparkles, UserX } from 'lucide-react'
 import { usersApi, ApiError } from '../services/api'
 import type { PublicUser } from '../types/auth'
 import { useAuth } from '../hooks/useAuth'
@@ -8,6 +8,7 @@ import { Avatar } from '../components/Avatar'
 import { Alert } from '../components/Alert'
 import { SkillList } from '../components/Skills'
 import { UserReviews } from '../components/UserReviews'
+import { BackLink } from '../components/BackLink'
 import { EmptyState, PageLoader } from '../components/States'
 import { formatPhone, fullName, memberSince } from '../utils/format'
 
@@ -53,10 +54,9 @@ export function UserProfilePage() {
   if (id === me?.id) return <Navigate to="/profile" replace />
 
   const back = (
-    <Link to="/users" className="btn btn--ghost" style={{ marginLeft: -12, marginBottom: 16 }}>
-      <ArrowLeft size={18} aria-hidden="true" />
+    <BackLink to="/users">
       Tous les membres
-    </Link>
+    </BackLink>
   )
 
   if (state.status === 'loading') return <PageLoader />
@@ -81,7 +81,7 @@ export function UserProfilePage() {
 
   if (state.status === 'error') {
     return (
-      <div className="page page--narrow">
+      <div className="page">
         <div className="container">
           {back}
           <Alert variant="error">{state.message}</Alert>
@@ -93,7 +93,7 @@ export function UserProfilePage() {
   const { profile } = state
 
   return (
-    <div className="page page--narrow">
+    <div className="page">
       <div className="container">
         {back}
 
@@ -105,11 +105,11 @@ export function UserProfilePage() {
               <div className="profile-hero__meta">
                 {profile.city && (
                   <span>
-                    <MapPin size={14} aria-hidden="true" /> {profile.city}
+                    <MapPin size={16} aria-hidden="true" /> {profile.city}
                   </span>
                 )}
                 <span>
-                  <Calendar size={14} aria-hidden="true" /> Membre depuis{' '}
+                  <Calendar size={16} aria-hidden="true" /> Membre depuis{' '}
                   {memberSince(profile.createdAt)}
                 </span>
               </div>

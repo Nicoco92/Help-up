@@ -1,37 +1,19 @@
 /* Notifications : cloche de la barre de navigation et page Notifications (charte : docs/charte-graphique.md)
    L'orange signale le « non lu » (charte §2.2) : toujours en fond, jamais en texte sur fond clair. */
 
-/* --- Cloche --- */
-.notification-bell {
-    position: relative;
-    display: inline-grid;
-    place-items: center;
-    width: var(--target-min);
-    height: var(--target-min);
-    border-radius: var(--radius-pill);
-    color: var(--color-label);
-}
-
-.notification-bell:hover,
-.notification-bell.active {
-    background: var(--color-surface-tinted);
-    color: var(--color-tint);
-}
-
 .notification-bell__count {
-    position: absolute;
-    top: 2px;
-    right: 0;
+    display: inline-grid;
     min-width: 20px;
     height: 20px;
+    place-items: center;
+    margin-left: auto;
     padding: 0 5px;
-    border: 2px solid var(--color-surface);
     border-radius: var(--radius-pill);
     background: var(--color-signal);
     color: var(--color-on-signal);
     font-size: var(--text-caption);
     font-weight: 700;
-    line-height: 16px;
+    line-height: 20px;
     text-align: center;
 }
 
@@ -106,7 +88,6 @@
 
 .notification__message:hover {
     color: var(--color-tint);
-    text-decoration: underline;
 }
 
 .notification__body time {

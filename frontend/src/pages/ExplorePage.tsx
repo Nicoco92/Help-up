@@ -141,7 +141,7 @@ function SearchFilters({
       <label className="search-field">
         <span>Rechercher une mission</span>
         <span className="input-with-icon">
-          <Search size={19} aria-hidden="true" />
+          <Search size={18} aria-hidden="true" />
           <input
             type="search"
             value={draft.q}
@@ -205,7 +205,7 @@ function SearchFilters({
         </span>
       </label>
       <div className="filter-actions">
-        <Button className="search-button" type="submit" icon={<Search size={17} />}>
+        <Button className="search-button" type="submit" icon={<Search size={16} />}>
           Rechercher
         </Button>
         <Button
@@ -213,7 +213,7 @@ function SearchFilters({
           variant="ghost"
           type="button"
           onClick={clearFilters}
-          icon={<RotateCcw size={17} />}
+          icon={<RotateCcw size={16} />}
         >
           Réinitialiser
         </Button>
@@ -305,7 +305,7 @@ export function ExplorePage() {
             aria-pressed={view === 'list'}
             onClick={() => changeView('list')}
           >
-            <List size={17} aria-hidden="true" />
+            <List size={16} aria-hidden="true" />
             Liste
           </button>
           <button
@@ -314,7 +314,7 @@ export function ExplorePage() {
             aria-pressed={view === 'map'}
             onClick={() => changeView('map')}
           >
-            <Map size={17} aria-hidden="true" />
+            <Map size={16} aria-hidden="true" />
             Carte
           </button>
         </div>

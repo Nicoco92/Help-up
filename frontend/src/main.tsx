@@ -6,6 +6,9 @@ import './styles/tokens.css'
 import './index.css'
 import 'leaflet/dist/leaflet.css'
 import App from './App'
+import { applyThemePreference, getThemePreference } from './utils/theme'
+
+applyThemePreference(getThemePreference())
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
